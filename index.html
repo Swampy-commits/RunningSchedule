@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#06021a">
+  <title>Eabha's Training Schedule</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5B21B6;
+      --primary-light: #7C3AED;
+      --bg: #F1F5F9;
+      --card: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --green: #22C55E;
+      --rest: #94A3B8;
+      --run: #3B82F6;
+      --club: #6366F1;
+      --reps: #0D9488;
+      --recovery: #06B6D4;
+      --sc: #F97316;
+      --strides: #D97706;
+      --race: #EF4444;
+      --custom: #EC4899;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      overscroll-behavior-x: none;
+    }
+
+    /* ===== RETRO BANNER ===== */
+    .banner-wrap {
+      position: relative;
+      background: #06021a;
+      overflow: hidden;
+    }
+    .banner-wrap canvas { display: block; width: 100%; height: 200px; }
+    .scanlines {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px);
+      pointer-events: none;
+    }
+    .crt-glow {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%);
+      pointer-events: none;
+    }
+
+    /* ===== HEADER BAR ===== */
+    .header-bar {
+      background: linear-gradient(180deg, #0f0a2e, #1a1050);
+      padding: 14px 16px 16px;
+      text-align: center;
+      border-bottom: 2px solid #4ECDC4;
+    }
+    .week-dots { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .week-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer; transition: all 0.2s; padding: 0;
+    }
+    .week-dot.current { background: #FFD700; border-color: #FFD700; transform: scale(1.3); box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+    .week-dot.complete { background: #4ECDC4; border-color: #4ECDC4; }
+    .week-dot.partial { background: #FF69B4; border-color: #FF69B4; }
+    .overall {
+      font-family: 'Press Start 2P', monospace; font-size: 8px;
+      color: #4ECDC4; margin-top: 10px; letter-spacing: 0.5px;
+    }
+
+    /* ===== WEEK NAV ===== */
+    .week-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px; background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--card);
+      font-size: 20px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      color: var(--text); transition: background 0.15s; flex-shrink: 0;
+    }
+    .nav-btn:active { background: var(--bg); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .week-info { text-align: center; flex: 1; min-width: 0; }
+    .week-title { font-size: 16px; font-weight: 700; }
+    .week-phase { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .week-dates { font-size: 12px; color: var(--text-muted); }
+    .week-km { font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px; }
+
+    .progress-wrap { padding: 0 16px 12px; background: var(--card); }
+    .progress-bar { height: 5px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #4ECDC4, #22C55E);
+      border-radius: 3px; transition: width 0.3s ease;
+    }
+    .progress-text { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-align: right; }
+
+    .days { padding: 8px 12px 90px; }
+
+    /* ===== DAY CARDS ===== */
+    .day-card {
+      background: var(--card); border-radius: 14px; margin-bottom: 10px;
+      overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .day-card.today { box-shadow: 0 0 0 2px var(--run), 0 4px 12px rgba(59,130,246,0.12); }
+    .day-card.rest-day { opacity: 0.75; }
+    .day-card.overridden { box-shadow: 0 0 0 2px var(--custom), 0 4px 12px rgba(236,72,153,0.12); }
+
+    .day-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 14px;
+    }
+    .day-left { display: flex; align-items: baseline; gap: 8px; }
+    .day-name { font-weight: 700; font-size: 14px; }
+    .day-date { font-size: 12px; color: var(--text-muted); }
+    .today-tag {
+      font-size: 10px; font-weight: 700; color: var(--run);
+      background: rgba(59,130,246,0.1); padding: 2px 8px;
+      border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .day-actions { display: flex; align-items: center; gap: 6px; }
+    .edit-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 14px; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .edit-btn:active { background: var(--bg); }
+
+    .drag-handle {
+      width: 24px; height: 30px; display: flex;
+      align-items: center; justify-content: center;
+      cursor: grab; color: var(--border); flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none; transition: color 0.15s;
+    }
+    .drag-handle:hover { color: var(--text-muted); }
+    .drag-handle:active { cursor: grabbing; }
+    .drag-handle svg { pointer-events: none; }
+    .day-card[draggable="true"] { cursor: default; }
+    .day-card.dragging { opacity: 0.3; }
+    .day-card.drag-over-above { box-shadow: 0 -3px 0 0 var(--primary), 0 1px 3px rgba(0,0,0,0.06); }
+    .day-card.drag-over-below { box-shadow: 0 3px 0 0 var(--primary), 0 1px 3px rgba(0,0,0,0.06); }
+    .drag-ghost {
+      position: fixed; z-index: 1000; pointer-events: none;
+      opacity: 0.9; transform: scale(1.02);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      border-radius: 14px; overflow: hidden; background: var(--card);
+    }
+
+    .acts { padding: 0 14px 10px; }
+
+    .act {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 0; border-top: 1px solid #F1F5F9;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.2s;
+    }
+    .act:first-child { border-top: none; }
+    .act.done { opacity: 0.5; }
+    .act.done .act-name, .act.done .act-detail { text-decoration: line-through; }
+
+    .check {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 7px;
+      border: 2px solid var(--border); display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.15s; margin-top: 1px;
+    }
+    .check.on { background: var(--green); border-color: var(--green); }
+    .check svg { display: block; }
+
+    .act-body { flex: 1; min-width: 0; }
+    .act-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+    }
+    .act-name { font-weight: 600; font-size: 14px; }
+    .act-detail { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
+
+    /* ===== OVERRIDE DISPLAY ===== */
+    .override-block {
+      padding: 0 14px 10px;
+    }
+    .override-content {
+      background: color-mix(in srgb, var(--custom) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--custom) 25%, transparent);
+      border-radius: 10px; padding: 10px 12px;
+    }
+    .override-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
+    }
+    .override-badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px;
+      background: color-mix(in srgb, var(--custom) 14%, transparent);
+      color: var(--custom);
+    }
+    .override-clear {
+      font-size: 11px; color: var(--text-muted); cursor: pointer;
+      text-decoration: underline; background: none; border: none;
+      font-family: inherit;
+    }
+    .override-text { font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+    .override-time { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+    .original-plan {
+      padding: 0 14px 10px;
+    }
+    .original-toggle {
+      font-size: 11px; color: var(--text-muted); cursor: pointer;
+      background: none; border: none; font-family: inherit;
+      text-decoration: underline; padding: 0;
+    }
+    .original-acts { opacity: 0.4; margin-top: 6px; }
+
+    .week-complete {
+      text-align: center; padding: 16px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px; color: #FFD700;
+    }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed; bottom: 20px; right: 16px;
+      background: var(--primary); color: white; border: none;
+      border-radius: 24px; padding: 10px 18px; font-size: 13px;
+      font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(91,33,182,0.35);
+      z-index: 20; font-family: inherit;
+    }
+    .fab:active { transform: scale(0.96); }
+
+    /* ===== LOG FAB ===== */
+    .log-fab {
+      position: fixed; bottom: 20px; left: 16px;
+      background: var(--custom); color: white; border: none;
+      border-radius: 24px; padding: 10px 18px; font-size: 13px;
+      font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(236,72,153,0.35);
+      z-index: 20; font-family: inherit;
+    }
+    .log-fab:active { transform: scale(0.96); }
+
+    /* ===== MODAL OVERLAY ===== */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 100;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card); border-radius: 16px; width: 100%;
+      max-width: 420px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      padding: 16px 18px 12px; border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .modal-body { padding: 16px 18px; }
+    .modal-body textarea {
+      width: 100%; min-height: 120px; border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px; font-family: inherit;
+      font-size: 14px; resize: vertical; outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal-body textarea:focus { border-color: var(--primary); }
+    .modal-body label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .modal-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .modal-planned {
+      margin-top: 12px; padding: 10px; background: var(--bg);
+      border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.5;
+    }
+    .modal-planned-title {
+      font-weight: 600; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px; color: var(--text);
+    }
+    .modal-footer {
+      padding: 12px 18px 16px; display: flex; gap: 10px; justify-content: flex-end;
+    }
+    .btn {
+      padding: 10px 20px; border-radius: 10px; font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      border: none; transition: all 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-cancel { background: var(--bg); color: var(--text); }
+    .btn-save { background: var(--primary); color: white; }
+    .btn-close { background: var(--bg); color: var(--text); width: 100%; }
+
+    /* ===== LOG MODAL ===== */
+    .log-list { list-style: none; }
+    .log-item {
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-date { font-size: 12px; font-weight: 600; color: var(--primary); }
+    .log-week { font-size: 10px; color: var(--text-muted); margin-left: 6px; }
+    .log-text { font-size: 13px; margin-top: 4px; line-height: 1.45; white-space: pre-wrap; }
+    .log-empty { text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 13px; }
+
+    .footer {
+      text-align: center; padding: 8px 16px 20px;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .footer a { color: var(--text-muted); cursor: pointer; text-decoration: underline; }
+
+    @media (min-width: 640px) {
+      .days { max-width: 540px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner-wrap">
+    <canvas id="game"></canvas>
+    <div class="scanlines"></div>
+    <div class="crt-glow"></div>
+  </div>
+
+  <div id="app"></div>
+
+  <!-- Override Modal -->
+  <div class="modal-overlay" id="overrideModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="omTitle">Custom Workout</div>
+        <div class="modal-subtitle" id="omSubtitle"></div>
+      </div>
+      <div class="modal-body">
+        <label for="omText">What did you do instead?</label>
+        <textarea id="omText" placeholder="e.g. Felt tired so did 20min easy jog + stretching instead"></textarea>
+        <div class="modal-hint">This will replace the planned workout for the day and be saved to your log.</div>
+        <div class="modal-planned" id="omPlanned"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="closeOverrideModal()">Cancel</button>
+        <button class="btn btn-save" onclick="saveOverride()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Modal -->
+  <div class="modal-overlay" id="logModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Workout Log</div>
+        <div class="modal-subtitle">Custom workouts you've recorded</div>
+      </div>
+      <div class="modal-body" id="logBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-close" onclick="closeLogModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================================
+       SCHEDULE DATA & APP LOGIC
+       ======================================================== */
+    const START = new Date(2026, 0, 26); // Monday Jan 26 (week 1 Tue = Jan 27)
+    const DAY_NAMES = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const TYPES = {
+      rest:     { label: 'Rest',     color: 'var(--rest)' },
+      club:     { label: 'Club',     color: 'var(--club)' },
+      recovery: { label: 'Recovery', color: 'var(--recovery)' },
+      run:      { label: 'Run',      color: 'var(--run)' },
+      strides:  { label: 'Strides',  color: 'var(--strides)' },
+      sc:       { label: 'S&C',      color: 'var(--sc)' },
+      reps:     { label: 'Reps',     color: 'var(--reps)' },
+      race:     { label: 'Race',     color: 'var(--race)' },
+      custom:   { label: 'Custom',   color: 'var(--custom)' },
+    };
+
+    const CHECK_SVG = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.5 3.5L13 5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    const SC_FULL = 'Squats 10\u201315\u00d73, Push-ups (knee ok) 8\u201312\u00d73, Planks 20\u201345s \u00d73/side, Glute bridges 10\u201315\u00d73, Lunges 8/leg \u00d73, Calf raises 15\u00d73. <25min, progress reps/form weekly.';
+    const SC_LIGHT = 'Squats 10\u00d72, Push-ups (knee ok) 8\u00d72, Planks 20s \u00d72/side, Glute bridges 10\u00d72, Lunges 6/leg \u00d72, Calf raises 10\u00d72. Keep it light.';
+
+    /* Activity helpers */
+    function off() { return [{ type:'rest', name:'Rest Day', detail:'' }]; }
+    function clubSpd(d) { return [{ type:'club', name:'Club Speed', detail:d }]; }
+    function clubEnd(d) { return [{ type:'club', name:'Club Speed Endurance', detail:d }]; }
+    function recov(d, sc) {
+      const acts = [{ type:'recovery', name:'Recovery', detail:d }];
+      if (sc !== false) acts.push({ type:'sc', name:'S&C Circuit', detail: sc === 'light' ? SC_LIGHT : SC_FULL });
+      return acts;
+    }
+    function fri(dist, strides, scNote) {
+      const acts = [{ type:'run', name:'Easy Run', detail:dist }];
+      if (strides) acts.push({ type:'strides', name:'Strides', detail:strides });
+      const scDesc = scNote === 'light' ? SC_LIGHT : scNote === 'off' ? 'Rest from S&C today' : SC_FULL;
+      acts.push({ type:'sc', name:'S&C Circuit', detail: scNote === 'full+plyos' ? SC_FULL + ' Add plyos (bounds, hops, skips).' : scDesc });
+      return acts;
+    }
+    function sun(repsDesc, cd, sc) {
+      const acts = [{ type:'reps', name:'Reps Session', detail:'2km warm-up \u2192 ' + repsDesc + ' \u2192 ' + (cd || '1\u20132km') + ' cool-down' }];
+      if (sc !== false) acts.push({ type:'sc', name:'S&C Circuit', detail: sc === 'light' ? SC_LIGHT : SC_FULL });
+      return acts;
+    }
+    function raceDay(d) { return [{ type:'race', name:'Race Day!', detail:d }]; }
+
+    const R7 = '1000m RPE7 \u2192 5min easy jog \u2192 600m RPE7 \u2192 3min easy jog \u2192 400m RPE7';
+    const R8 = '1000m RPE8 \u2192 5min easy jog \u2192 600m RPE8 \u2192 3min easy jog \u2192 400m RPE8';
+    const R9 = '1000m RPE9 \u2192 5min easy jog \u2192 600m RPE9 \u2192 3min easy jog \u2192 400m RPE9';
+
+    const WEEKS = [
+      /* ===== BASE PHASE (Weeks 1-4) ===== */
+      { phase:'Base Phase', km:25, days:[
+        off(),
+        clubSpd('200\u2013400m reps'),
+        recov('20min trainer (RPE 3\u20134)'),
+        clubEnd('400\u2013800m reps'),
+        fri('4km easy pace', '4\u00d720m strides', 'full'),
+        off(),
+        sun('1\u00d7(' + R7 + ')', '1\u20132km')
+      ]},
+      { phase:'Base Phase', km:27, days:[
+        off(),
+        clubSpd('As club'),
+        recov('25min trainer (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('4.5km easy pace', '6\u00d720m strides', 'full'),
+        off(),
+        sun('1\u00d7(' + R7 + ')', '1\u20132km')
+      ]},
+      { phase:'Base Phase', km:30, days:[
+        off(),
+        clubSpd('As club'),
+        recov('25min / 3km easy (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('5km easy pace', '6\u00d720m strides', 'full'),
+        off(),
+        sun('1\u20132\u00d7(' + R8 + ')', '1\u20132km')
+      ]},
+      { phase:'Base Phase', km:24, days:[
+        off(),
+        clubSpd('800m Time Trial'),
+        recov('20min trainer (RPE 3\u20134)'),
+        clubEnd('Easy reps'),
+        fri('4km easy pace', 'Strides', 'light'),
+        off(),
+        sun('1\u00d7(' + R8 + ')', '1\u20132km')
+      ]},
+
+      /* ===== BUILD PHASE (Weeks 5-9) ===== */
+      { phase:'Build Phase', km:32, days:[
+        off(),
+        clubSpd('As club'),
+        recov('30min trainer (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('5km easy pace', 'Strides', 'full'),
+        off(),
+        sun('1\u20132\u00d7(' + R8 + ')', '1\u20132km')
+      ]},
+      { phase:'Build Phase', km:34, days:[
+        off(),
+        clubSpd('As club'),
+        recov('30min trainer (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('5.5km easy pace', null, 'full+plyos'),
+        off(),
+        sun('2\u00d7(' + R8 + ')', '1\u20132km')
+      ]},
+      { phase:'Build Phase', km:34, days:[
+        off(),
+        clubSpd('As club'),
+        recov('25min trainer (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('5km easy pace', null, 'full'),
+        off(),
+        sun('2\u00d7(' + R9 + ')', '1\u20132km')
+      ]},
+      { phase:'Build Phase (Recovery)', km:26, days:[
+        off(),
+        clubSpd('Easy reps'),
+        recov('20min trainer (RPE 3\u20134)'),
+        clubEnd('Light session'),
+        fri('4km easy pace', null, 'light'),
+        off(),
+        sun('1\u00d7(' + R7 + ')', '1\u20132km')
+      ]},
+      { phase:'Build Phase', km:32, days:[
+        off(),
+        clubSpd('As club'),
+        recov('30min / 4km easy (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('5km easy pace', 'Strides', 'full'),
+        off(),
+        sun('2\u00d7(' + R9 + ')', '1\u20132km')
+      ]},
+
+      /* ===== PEAK / TAPER PHASE (Weeks 10-14) ===== */
+      { phase:'Peak / Taper', km:29, days:[
+        off(),
+        clubSpd('As club'),
+        recov('25min trainer (RPE 3\u20134)'),
+        clubEnd('As club'),
+        fri('4.5km easy pace', 'Strides', 'light'),
+        off(),
+        sun('1\u20132\u00d7(' + R8 + ')', '1km')
+      ]},
+      { phase:'Peak / Taper', km:26, days:[
+        off(),
+        clubSpd('Short reps'),
+        recov('20min trainer (RPE 3\u20134)'),
+        clubEnd('Short reps'),
+        fri('4km easy pace', null, 'full'),
+        off(),
+        sun('1\u00d7(' + R9 + ')', '1km')
+      ]},
+      { phase:'Peak / Taper', km:20, days:[
+        off(),
+        clubSpd('Easy reps'),
+        recov('15min trainer (RPE 3\u20134)'),
+        clubEnd('Light session'),
+        fri('3km easy pace', '4\u00d720m strides + drills', 'full'),
+        off(),
+        sun('1\u00d7(' + R8 + ' + strides)', '1km', 'light')
+      ]},
+      { phase:'Peak / Taper', km:13, days:[
+        off(),
+        clubSpd('Strides only'),
+        recov('10min trainer (RPE 3\u20134)', 'light'),
+        [{ type:'rest', name:'Off', detail:'Rest day \u2013 no training' }],
+        fri('2km shakeout', null, 'light'),
+        off(),
+        [{ type:'reps', name:'800m Time Trial', detail:'1\u00d7800m RPE8 \u2013 sharp effort' }]
+      ]},
+      { phase:'Race Week!', km:10, days:[
+        off(),
+        clubSpd('Race warm-up strides'),
+        off(),
+        [{ type:'rest', name:'Off / Rest', detail:'Rest day' }],
+        fri('Easy 2km shakeout', null, 'light'),
+        off(),
+        raceDay('RACE DAY! Warm-up 10\u201315min jog, drills, 4\u20136\u00d760\u201380m strides \u2192 Race \u2192 Cool-down jog. (Or 4\u00d7200m RPE9 if no race)')
+      ]}
+    ];
+
+    /* ===== STATE ===== */
+    let currentWeek = 0;
+    let completed = {};
+    let overrides = {};
+    let editingOverride = null; // { wi, di }
+    let dayOrders = {};
+    let dragFromHandle = false;
+    let dragState = null;
+    const DEFAULT_ORDER = [0,1,2,3,4,5,6];
+
+    function loadState() {
+      try { completed = JSON.parse(localStorage.getItem('eabha-v2') || '{}'); } catch(e) { completed = {}; }
+      try { overrides = JSON.parse(localStorage.getItem('eabha-overrides') || '{}'); } catch(e) { overrides = {}; }
+      try { dayOrders = JSON.parse(localStorage.getItem('eabha-dayorder') || '{}'); } catch(e) { dayOrders = {}; }
+    }
+    function saveState() {
+      localStorage.setItem('eabha-v2', JSON.stringify(completed));
+      localStorage.setItem('eabha-overrides', JSON.stringify(overrides));
+      localStorage.setItem('eabha-dayorder', JSON.stringify(dayOrders));
+    }
+
+    /* ===== DATE UTILS ===== */
+    function weekStart(wi) {
+      const d = new Date(START);
+      d.setDate(d.getDate() + wi * 7);
+      return d;
+    }
+    function addDays(d, n) {
+      const r = new Date(d);
+      r.setDate(r.getDate() + n);
+      return r;
+    }
+    function fmtDate(d) { return MONTH_NAMES[d.getMonth()] + ' ' + d.getDate(); }
+    function fmtRange(wi) {
+      const s = weekStart(wi), e = addDays(s, 6);
+      if (s.getMonth() === e.getMonth()) return MONTH_NAMES[s.getMonth()] + ' ' + s.getDate() + '\u2013' + e.getDate();
+      return fmtDate(s) + ' \u2013 ' + fmtDate(e);
+    }
+    function sameDay(a, b) {
+      return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    }
+    function today() { return new Date(); }
+    function fmtTimestamp(ts) {
+      const d = new Date(ts);
+      return fmtDate(d) + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+    }
+
+    /* ===== PROGRESS ===== */
+    function dayKey(wi, di) { return 'w' + wi + '-' + di; }
+    function actKey(wi, di, ai) { return 'w' + wi + '-' + di + '-' + ai; }
+    function isOverridden(wi, di) { return !!overrides[dayKey(wi, di)]; }
+    function isOverrideDone(wi, di) { return !!completed['ov-' + dayKey(wi, di)]; }
+
+    function weekProgress(wi) {
+      const w = WEEKS[wi]; let total = 0, done = 0;
+      w.days.forEach((acts, di) => {
+        if (isOverridden(wi, di)) {
+          total++; if (isOverrideDone(wi, di)) done++;
+        } else {
+          acts.forEach((_, ai) => { total++; if (completed[actKey(wi, di, ai)]) done++; });
+        }
+      });
+      return { total, done, pct: total ? Math.round(done / total * 100) : 0 };
+    }
+    function overallProgress() {
+      let total = 0, done = 0;
+      WEEKS.forEach((w, wi) => {
+        w.days.forEach((acts, di) => {
+          if (isOverridden(wi, di)) {
+            total++; if (isOverrideDone(wi, di)) done++;
+          } else {
+            acts.forEach((_, ai) => { total++; if (completed[actKey(wi, di, ai)]) done++; });
+          }
+        });
+      });
+      return { total, done, pct: total ? Math.round(done / total * 100) : 0 };
+    }
+    function weekStatus(wi) {
+      const p = weekProgress(wi);
+      if (p.pct === 100) return 'complete'; if (p.done > 0) return 'partial'; return '';
+    }
+
+    /* ===== RENDER ===== */
+    function render() {
+      const week = WEEKS[currentWeek];
+      const wp = weekProgress(currentWeek);
+      const op = overallProgress();
+      const ws = weekStart(currentWeek);
+      const t = today();
+      const todayWeek = Math.floor((t - START) / (7 * 24 * 60 * 60 * 1000));
+      const showFab = todayWeek >= 0 && todayWeek < WEEKS.length && todayWeek !== currentWeek;
+      const hasOverrides = Object.keys(overrides).length > 0;
+      let html = '';
+
+      /* Header bar */
+      html += '<div class="header-bar"><div class="week-dots">';
+      for (let i = 0; i < WEEKS.length; i++) {
+        html += '<button class="week-dot ' + (i === currentWeek ? 'current ' : '') + weekStatus(i) + '" onclick="goToWeek(' + i + ')" aria-label="Week ' + (i + 1) + '"></button>';
+      }
+      html += '</div><p class="overall">' + op.done + ' / ' + op.total + ' COMPLETE (' + op.pct + '%)</p></div>';
+
+      /* Week nav */
+      html += '<nav class="week-nav">';
+      html += '<button class="nav-btn" onclick="goToWeek(' + (currentWeek - 1) + ')"' + (currentWeek === 0 ? ' disabled' : '') + ' aria-label="Previous week">\u2039</button>';
+      html += '<div class="week-info">';
+      html += '<div class="week-title">Week ' + (currentWeek + 1) + ' of ' + WEEKS.length + '</div>';
+      html += '<div class="week-phase">' + week.phase + '</div>';
+      html += '<div class="week-dates">' + fmtRange(currentWeek) + '</div>';
+      html += '<div class="week-km">~' + week.km + ' km this week</div>';
+      html += '</div>';
+      html += '<button class="nav-btn" onclick="goToWeek(' + (currentWeek + 1) + ')"' + (currentWeek === WEEKS.length - 1 ? ' disabled' : '') + ' aria-label="Next week">\u203A</button>';
+      html += '</nav>';
+
+      /* Progress */
+      html += '<div class="progress-wrap">';
+      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + wp.pct + '%"></div></div>';
+      html += '<div class="progress-text">' + wp.done + ' of ' + wp.total + ' activities \u00b7 ' + wp.pct + '%</div>';
+      html += '</div>';
+
+      /* Days */
+      html += '<div class="days">';
+      if (wp.pct === 100) {
+        html += '<div class="week-complete">WEEK COMPLETE! GREAT WORK!</div>';
+      }
+
+      const order = dayOrders[currentWeek] || DEFAULT_ORDER;
+      const hasCustomOrder = !!dayOrders[currentWeek];
+      order.forEach((di, pos) => {
+        const acts = week.days[di];
+        const date = addDays(ws, di);
+        const isToday = sameDay(date, t);
+        const isRest = acts.length === 1 && acts[0].type === 'rest';
+        const hasOv = isOverridden(currentWeek, di);
+        const ovDone = isOverrideDone(currentWeek, di);
+
+        html += '<div class="day-card' + (isToday ? ' today' : '') + (isRest && !hasOv ? ' rest-day' : '') + (hasOv ? ' overridden' : '') + '" data-pos="' + pos + '" data-di="' + di + '" ondragstart="onDragStart(event,' + currentWeek + ',' + di + ',' + pos + ')" ondragover="onDragOver(event,' + pos + ')" ondragleave="onDragLeave(event)" ondrop="onDrop(event,' + pos + ')" ondragend="onDragEnd(event)">';
+        html += '<div class="day-head">';
+        html += '<div class="day-left">';
+        html += '<span class="drag-handle" onmousedown="dragFromHandle=true;this.closest(\'.day-card\').draggable=true" ontouchstart="onTouchDragStart(event,' + currentWeek + ',' + di + ',' + pos + ')"><svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2.5" cy="2" r="1.4"/><circle cx="7.5" cy="2" r="1.4"/><circle cx="2.5" cy="7" r="1.4"/><circle cx="7.5" cy="7" r="1.4"/><circle cx="2.5" cy="12" r="1.4"/><circle cx="7.5" cy="12" r="1.4"/></svg></span>';
+        html += '<span class="day-name">' + DAY_NAMES[di] + '</span><span class="day-date">' + fmtDate(date) + '</span></div>';
+        html += '<div class="day-actions">';
+        if (isToday) html += '<span class="today-tag">Today</span>';
+        html += '<button class="edit-btn" onclick="openOverrideModal(' + currentWeek + ',' + di + ')" aria-label="Custom workout" title="Log custom workout">';
+        html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M12.15 1.85a1.5 1.5 0 0 1 2.12 2.12L5.7 12.54l-3.08.77.77-3.08 8.76-8.38zM2 14h12v1H2v-1z"/></svg>';
+        html += '</button></div></div>';
+
+        if (hasOv) {
+          const ov = overrides[dayKey(currentWeek, di)];
+          html += '<div class="override-block">';
+          html += '<div class="override-content">';
+          html += '<div class="override-header">';
+          html += '<span class="override-badge">Custom Workout</span>';
+          html += '<button class="override-clear" onclick="clearOverride(' + currentWeek + ',' + di + ')">Revert to plan</button>';
+          html += '</div>';
+          /* Clickable to toggle done */
+          html += '<div class="act' + (ovDone ? ' done' : '') + '" onclick="toggleOverride(' + currentWeek + ',' + di + ')" style="border-top:none;padding-top:4px">';
+          html += '<div class="check' + (ovDone ? ' on' : '') + '">' + (ovDone ? CHECK_SVG : '') + '</div>';
+          html += '<div class="act-body"><div class="override-text">' + escHtml(ov.text) + '</div>';
+          html += '<div class="override-time">Logged ' + fmtTimestamp(ov.timestamp) + '</div>';
+          html += '</div></div>';
+          html += '</div></div>';
+          /* Collapsed original plan */
+          html += '<div class="original-plan">';
+          html += '<button class="original-toggle" onclick="toggleOriginal(this)">Show original plan</button>';
+          html += '<div class="original-acts" style="display:none">';
+          acts.forEach((act) => {
+            const tp = TYPES[act.type];
+            html += '<div style="font-size:12px;padding:3px 0;color:var(--text-muted)">';
+            html += '<span class="badge" style="background:color-mix(in srgb,' + tp.color + ' 14%,transparent);color:' + tp.color + '">' + tp.label + '</span> ';
+            html += act.name;
+            if (act.detail) html += ' \u2013 ' + act.detail;
+            html += '</div>';
+          });
+          html += '</div></div>';
+        } else {
+          html += '<div class="acts">';
+          acts.forEach((act, ai) => {
+            const id = actKey(currentWeek, di, ai);
+            const done = !!completed[id];
+            const tp = TYPES[act.type];
+            html += '<div class="act' + (done ? ' done' : '') + '" onclick="toggle(\'' + id + '\')">';
+            html += '<div class="check' + (done ? ' on' : '') + '">' + (done ? CHECK_SVG : '') + '</div>';
+            html += '<div class="act-body"><div class="act-top">';
+            html += '<span class="badge" style="background:color-mix(in srgb,' + tp.color + ' 14%,transparent);color:' + tp.color + '">' + tp.label + '</span>';
+            html += '<span class="act-name">' + act.name + '</span>';
+            html += '</div>';
+            if (act.detail) html += '<div class="act-detail">' + act.detail + '</div>';
+            html += '</div></div>';
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+
+      html += '<div class="footer">Progress saved on this device &middot; <a onclick="resetProgress()">Reset all</a>';
+      if (hasCustomOrder) html += ' &middot; <a onclick="resetDayOrder()">Reset day order</a>';
+      html += '</div>';
+      html += '</div>';
+
+      if (showFab) html += '<button class="fab" onclick="goToToday()">Go to Today</button>';
+      if (hasOverrides) html += '<button class="log-fab" onclick="openLogModal()">Workout Log</button>';
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+
+    /* ===== EVENTS ===== */
+    function toggle(id) {
+      const sy = window.scrollY;
+      if (completed[id]) delete completed[id]; else completed[id] = true;
+      saveState(); render(); window.scrollTo(0, sy);
+    }
+    function toggleOverride(wi, di) {
+      const sy = window.scrollY;
+      const k = 'ov-' + dayKey(wi, di);
+      if (completed[k]) delete completed[k]; else completed[k] = true;
+      saveState(); render(); window.scrollTo(0, sy);
+    }
+    function goToWeek(i) {
+      if (i < 0 || i >= WEEKS.length) return;
+      currentWeek = i; render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function goToToday() {
+      const diff = Math.floor((today() - START) / (7 * 24 * 60 * 60 * 1000));
+      currentWeek = Math.max(0, Math.min(diff, WEEKS.length - 1));
+      render();
+      setTimeout(() => {
+        const el = document.querySelector('.day-card.today');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+    function resetProgress() {
+      if (confirm('Reset all progress and custom workouts? This cannot be undone.')) {
+        completed = {}; overrides = {}; dayOrders = {}; saveState(); render();
+      }
+    }
+    function toggleOriginal(btn) {
+      const div = btn.nextElementSibling;
+      const showing = div.style.display !== 'none';
+      div.style.display = showing ? 'none' : 'block';
+      btn.textContent = showing ? 'Show original plan' : 'Hide original plan';
+    }
+
+    /* ===== DRAG & DROP (Desktop) ===== */
+    document.addEventListener('mouseup', () => {
+      dragFromHandle = false;
+      document.querySelectorAll('.day-card[draggable]').forEach(el => el.removeAttribute('draggable'));
+    });
+
+    function onDragStart(e, wi, di, pos) {
+      if (!dragFromHandle) { e.preventDefault(); e.target.closest('.day-card').removeAttribute('draggable'); return; }
+      dragFromHandle = false;
+      dragState = { wi, di, pos };
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      requestAnimationFrame(() => {
+        const card = e.target.closest('.day-card');
+        if (card) card.classList.add('dragging');
+      });
+    }
+
+    function onDragOver(e, targetPos) {
+      e.preventDefault();
+      if (!dragState || targetPos === dragState.pos) return;
+      e.dataTransfer.dropEffect = 'move';
+      const card = e.currentTarget;
+      document.querySelectorAll('.drag-over-above,.drag-over-below').forEach(el => {
+        el.classList.remove('drag-over-above', 'drag-over-below');
+      });
+      card.classList.add(targetPos < dragState.pos ? 'drag-over-above' : 'drag-over-below');
+    }
+
+    function onDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over-above', 'drag-over-below');
+    }
+
+    function onDrop(e, targetPos) {
+      e.preventDefault();
+      document.querySelectorAll('.drag-over-above,.drag-over-below').forEach(el => {
+        el.classList.remove('drag-over-above', 'drag-over-below');
+      });
+      if (!dragState || targetPos === dragState.pos) return;
+      performReorder(dragState.wi, dragState.pos, targetPos);
+      dragState = null;
+    }
+
+    function onDragEnd(e) {
+      document.querySelectorAll('.dragging,.drag-over-above,.drag-over-below').forEach(el => {
+        el.classList.remove('dragging', 'drag-over-above', 'drag-over-below');
+      });
+      dragState = null;
+    }
+
+    function performReorder(wi, fromPos, toPos) {
+      const order = (dayOrders[wi] || [...DEFAULT_ORDER]).slice();
+      const [moved] = order.splice(fromPos, 1);
+      order.splice(toPos, 0, moved);
+      if (order.every((v, i) => v === i)) {
+        delete dayOrders[wi];
+      } else {
+        dayOrders[wi] = order;
+      }
+      saveState();
+      render();
+    }
+
+    function resetDayOrder() {
+      if (!confirm('Reset day order for this week back to default?')) return;
+      delete dayOrders[currentWeek];
+      saveState();
+      render();
+    }
+
+    /* ===== DRAG & DROP (Touch / Mobile) ===== */
+    function onTouchDragStart(e, wi, di, pos) {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      const card = e.target.closest('.day-card');
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+
+      const ghost = card.cloneNode(true);
+      ghost.className = 'day-card drag-ghost';
+      ghost.style.width = rect.width + 'px';
+      ghost.style.top = (touch.clientY - 30) + 'px';
+      ghost.style.left = rect.left + 'px';
+      document.body.appendChild(ghost);
+
+      card.classList.add('dragging');
+      dragState = { wi, di, pos, ghostEl: ghost };
+
+      document.addEventListener('touchmove', onTouchDragMove, { passive: false });
+      document.addEventListener('touchend', onTouchDragEnd);
+    }
+
+    function onTouchDragMove(e) {
+      if (!dragState || !dragState.ghostEl) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      dragState.ghostEl.style.top = (touch.clientY - 30) + 'px';
+
+      document.querySelectorAll('.drag-over-above,.drag-over-below').forEach(el => {
+        el.classList.remove('drag-over-above', 'drag-over-below');
+      });
+      const cards = document.querySelectorAll('.day-card:not(.dragging)');
+      let closestCard = null, closestDist = Infinity;
+      cards.forEach(c => {
+        const r = c.getBoundingClientRect();
+        const mid = r.top + r.height / 2;
+        const dist = Math.abs(touch.clientY - mid);
+        if (dist < closestDist && touch.clientY > r.top - 20 && touch.clientY < r.bottom + 20) {
+          closestDist = dist;
+          closestCard = c;
+        }
+      });
+      if (closestCard) {
+        const r = closestCard.getBoundingClientRect();
+        const mid = r.top + r.height / 2;
+        closestCard.classList.add(touch.clientY < mid ? 'drag-over-above' : 'drag-over-below');
+      }
+    }
+
+    function onTouchDragEnd(e) {
+      document.removeEventListener('touchmove', onTouchDragMove);
+      document.removeEventListener('touchend', onTouchDragEnd);
+      if (!dragState) return;
+
+      if (dragState.ghostEl) dragState.ghostEl.remove();
+
+      const overCard = document.querySelector('.drag-over-above,.drag-over-below');
+      if (overCard) {
+        const targetPos = parseInt(overCard.dataset.pos);
+        if (targetPos !== dragState.pos) {
+          performReorder(dragState.wi, dragState.pos, targetPos);
+        }
+      }
+
+      document.querySelectorAll('.dragging,.drag-over-above,.drag-over-below').forEach(el => {
+        el.classList.remove('dragging', 'drag-over-above', 'drag-over-below');
+      });
+      dragState = null;
+    }
+
+    /* ===== OVERRIDE MODAL ===== */
+    function openOverrideModal(wi, di) {
+      editingOverride = { wi, di };
+      const ws = weekStart(wi);
+      const date = addDays(ws, di);
+      document.getElementById('omTitle').textContent = DAY_NAMES[di] + ' \u2013 Custom Workout';
+      document.getElementById('omSubtitle').textContent = 'Week ' + (wi + 1) + ' \u00b7 ' + fmtDate(date);
+
+      const existing = overrides[dayKey(wi, di)];
+      document.getElementById('omText').value = existing ? existing.text : '';
+
+      /* Show planned workout */
+      const acts = WEEKS[wi].days[di];
+      let planned = '';
+      acts.forEach(act => {
+        planned += '\u2022 ' + act.name;
+        if (act.detail) planned += ': ' + act.detail;
+        planned += '\n';
+      });
+      const pp = document.getElementById('omPlanned');
+      pp.innerHTML = '<div class="modal-planned-title">Planned workout</div>' + escHtml(planned.trim());
+
+      document.getElementById('overrideModal').classList.add('open');
+      setTimeout(() => document.getElementById('omText').focus(), 100);
+    }
+    function closeOverrideModal() {
+      document.getElementById('overrideModal').classList.remove('open');
+      editingOverride = null;
+    }
+    function saveOverride() {
+      if (!editingOverride) return;
+      const text = document.getElementById('omText').value.trim();
+      if (!text) { alert('Please describe what you did.'); return; }
+      const { wi, di } = editingOverride;
+      overrides[dayKey(wi, di)] = { text, timestamp: Date.now() };
+      /* Auto-mark as done */
+      completed['ov-' + dayKey(wi, di)] = true;
+      saveState();
+      closeOverrideModal();
+      render();
+    }
+    function clearOverride(wi, di) {
+      if (!confirm('Revert to the planned workout?')) return;
+      const sy = window.scrollY;
+      delete overrides[dayKey(wi, di)];
+      delete completed['ov-' + dayKey(wi, di)];
+      saveState(); render(); window.scrollTo(0, sy);
+    }
+
+    /* ===== LOG MODAL ===== */
+    function openLogModal() {
+      const entries = [];
+      Object.keys(overrides).forEach(key => {
+        const m = key.match(/^w(\d+)-(\d+)$/);
+        if (!m) return;
+        const wi = parseInt(m[1]), di = parseInt(m[2]);
+        const ws = weekStart(wi);
+        const date = addDays(ws, di);
+        entries.push({
+          date, wi, di,
+          dayName: DAY_NAMES[di],
+          dateStr: fmtDate(date),
+          ...overrides[key]
+        });
+      });
+      entries.sort((a, b) => a.date - b.date);
+
+      let html = '';
+      if (entries.length === 0) {
+        html = '<div class="log-empty">No custom workouts logged yet.</div>';
+      } else {
+        html = '<ul class="log-list">';
+        entries.forEach(e => {
+          html += '<li class="log-item">';
+          html += '<span class="log-date">' + e.dayName + ' ' + e.dateStr + '</span>';
+          html += '<span class="log-week">Week ' + (e.wi + 1) + '</span>';
+          html += '<div class="log-text">' + escHtml(e.text) + '</div>';
+          html += '</li>';
+        });
+        html += '</ul>';
+      }
+      document.getElementById('logBody').innerHTML = html;
+      document.getElementById('logModal').classList.add('open');
+    }
+    function closeLogModal() {
+      document.getElementById('logModal').classList.remove('open');
+    }
+
+    /* Close modals on overlay click */
+    document.getElementById('overrideModal').addEventListener('click', function(e) {
+      if (e.target === this) closeOverrideModal();
+    });
+    document.getElementById('logModal').addEventListener('click', function(e) {
+      if (e.target === this) closeLogModal();
+    });
+
+    /* Swipe navigation */
+    let touchX = 0, touchY = 0;
+    document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; touchY = e.changedTouches[0].screenY; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dx = touchX - e.changedTouches[0].screenX;
+      const dy = Math.abs(touchY - e.changedTouches[0].screenY);
+      if (Math.abs(dx) > 80 && Math.abs(dx) > dy * 2) {
+        if (dx > 0) goToWeek(currentWeek + 1); else goToWeek(currentWeek - 1);
+      }
+    }, { passive: true });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') goToWeek(currentWeek - 1);
+      if (e.key === 'ArrowRight') goToWeek(currentWeek + 1);
+      if (e.key === 'Escape') { closeOverrideModal(); closeLogModal(); }
+    });
+
+    /* ========================================================
+       RETRO ARCADE BANNER ANIMATION
+       ======================================================== */
+    const cvs = document.getElementById('game');
+    const ctx = cvs.getContext('2d');
+    let gW, gH;
+    const PX = 4;
+    const TRACK_H = 48;
+
+    const stars = [];
+    for (let i = 0; i < 60; i++) {
+      stars.push({ x: Math.random(), y: Math.random() * 0.5, phase: Math.random() * Math.PI * 2, sz: Math.random() > 0.75 ? 2 : 1 });
+    }
+
+    let particles = [];
+    let charX = -60, animFrame = 0;
+    let animPhase = 'running';
+    let celebTimer = 0;
+    let fontReady = false;
+    document.fonts.ready.then(() => { fontReady = true; });
+
+    function resizeBanner() {
+      gW = cvs.parentElement.offsetWidth;
+      gH = 200;
+      cvs.width = gW;
+      cvs.height = gH;
+    }
+
+    function px(c, x, y, w, h) {
+      ctx.fillStyle = c;
+      ctx.fillRect(x, y, w || PX, h || PX);
+    }
+
+    function drawRunner(x, y, frame) {
+      const p = PX;
+      const HAIR = '#5C3317', SKIN = '#FFCC99', VEST = '#16A34A', SHORT = '#1a1a3e', SHOE = '#FFF', PONY = '#7B4B27', EYE = '#222';
+      px(HAIR, x+2*p, y, 3*p, p);
+      px(HAIR, x+p, y+p, 5*p, p);
+      px(HAIR, x+p, y+2*p, p, p);
+      px(HAIR, x+5*p, y+2*p, p, p);
+      px(SKIN, x+2*p, y+2*p, 3*p, 2*p);
+      px(EYE, x+4*p, y+2*p, p, p);
+      if (frame === 2) px(SKIN, x+4*p, y+3*p, p, p);
+
+      if (frame < 2) {
+        px(PONY, x, y+2*p, p, p);
+        px(PONY, x-p, y+3*p, p, p);
+        px(PONY, x-2*p, y+(frame===0?4:3)*p, p, p);
+        px(PONY, x-3*p, y+(frame===0?5:4)*p, p, p);
+        px(SKIN, x+3*p, y+4*p, p, p);
+        px(VEST, x+2*p, y+5*p, 3*p, p);
+        px(VEST, x+2*p, y+6*p, 3*p, p);
+        px('#FFF', x+3*p, y+5*p, p, 2*p);
+        if (frame === 0) {
+          px(SKIN, x+5*p, y+5*p, p, p); px(SKIN, x+6*p, y+4*p, p, p);
+          px(SKIN, x+p, y+6*p, p, p); px(SKIN, x, y+7*p, p, p);
+        } else {
+          px(SKIN, x+p, y+5*p, p, p); px(SKIN, x, y+4*p, p, p);
+          px(SKIN, x+5*p, y+6*p, p, p); px(SKIN, x+6*p, y+7*p, p, p);
+        }
+        px(SHORT, x+2*p, y+7*p, 3*p, p);
+        if (frame === 0) {
+          px(SKIN, x+4*p, y+8*p, p, p); px(SKIN, x+5*p, y+9*p, p, p);
+          px(SHOE, x+5*p, y+10*p, 2*p, p);
+          px(SKIN, x+2*p, y+8*p, p, p); px(SKIN, x+p, y+9*p, p, p);
+          px(SHOE, x-p, y+10*p, 2*p, p);
+        } else {
+          px(SKIN, x+2*p, y+8*p, p, p); px(SKIN, x+p, y+9*p, p, p);
+          px(SHOE, x, y+10*p, 2*p, p);
+          px(SKIN, x+4*p, y+8*p, p, p); px(SKIN, x+5*p, y+9*p, p, p);
+          px(SHOE, x+5*p, y+10*p, 2*p, p);
+        }
+      } else {
+        px(PONY, x, y+p, p, p);
+        px(PONY, x-p, y, p, p);
+        px(PONY, x-2*p, y-p, p, p);
+        px(SKIN, x+3*p, y+4*p, p, p);
+        px(VEST, x+2*p, y+5*p, 3*p, 2*p);
+        px('#FFF', x+3*p, y+5*p, p, 2*p);
+        px(SKIN, x+p, y+4*p, p, p); px(SKIN, x, y+3*p, p, p); px(SKIN, x-p, y+2*p, p, p);
+        px(SKIN, x+5*p, y+4*p, p, p); px(SKIN, x+6*p, y+3*p, p, p); px(SKIN, x+7*p, y+2*p, p, p);
+        if (Math.floor(animFrame / 6) % 2 === 0) {
+          px('#FFD700', x-2*p, y+p, p, p);
+          px('#FFD700', x+8*p, y+p, p, p);
+        }
+        px(SHORT, x+2*p, y+7*p, 3*p, p);
+        px(SKIN, x+2*p, y+8*p, p, 2*p);
+        px(SKIN, x+4*p, y+8*p, p, 2*p);
+        px(SHOE, x+p, y+10*p, 2*p, p);
+        px(SHOE, x+4*p, y+10*p, 2*p, p);
+      }
+    }
+
+    function drawBgRunner(x, y, frame, vestColor) {
+      const p = 3;
+      ctx.globalAlpha = 0.5;
+      px(vestColor, x, y+3*p, 2*p, 2*p);
+      px('#333', x, y, 2*p, 2*p);
+      px('#333', x, y+5*p, 2*p, p);
+      if (frame === 0) {
+        px('#333', x+2*p, y+4*p, p, p); px('#333', x-p, y+3*p, p, p);
+        px('#555', x+2*p, y+6*p, p, p); px('#555', x-p, y+6*p, p, p);
+      } else {
+        px('#333', x-p, y+4*p, p, p); px('#333', x+2*p, y+3*p, p, p);
+        px('#555', x-p, y+6*p, p, p); px('#555', x+2*p, y+6*p, p, p);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, gW, gH);
+      const trackY = gH - TRACK_H;
+      const finishX = Math.floor(gW * 0.62);
+      const runSpeed = Math.max(1.5, gW / 260);
+
+      const grad = ctx.createLinearGradient(0, 0, 0, trackY);
+      grad.addColorStop(0, '#06021a');
+      grad.addColorStop(0.6, '#12082e');
+      grad.addColorStop(1, '#1a1050');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, gW, trackY);
+
+      stars.forEach(s => {
+        const a = 0.2 + 0.8 * Math.abs(Math.sin(animFrame * 0.025 + s.phase));
+        ctx.fillStyle = 'rgba(255,255,255,' + a + ')';
+        ctx.fillRect(Math.floor(s.x * gW), Math.floor(s.y * gH), s.sz, s.sz);
+      });
+
+      if (fontReady) {
+        const ts = Math.min(12, Math.floor(gW / 28));
+        ctx.font = ts + 'px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#3a1a00';
+        ctx.fillText("EABHA'S TRAINING", gW/2 + 1, 22);
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText("EABHA'S TRAINING", gW/2, 21);
+        ctx.font = Math.max(6, ts - 4) + 'px "Press Start 2P"';
+        ctx.fillStyle = '#4ECDC4';
+        ctx.fillText('800m / 1500m Programme', gW/2, 36);
+      }
+
+      ctx.fillStyle = '#110930';
+      for (let x = 0; x < gW; x += 9) {
+        const h = 15 + Math.sin(x * 0.4) * 4 | 0;
+        ctx.fillRect(x, trackY - h, 7, h);
+        ctx.fillRect(x + 1, trackY - h - 5, 5, 5);
+        if (animPhase === 'celebrating' && Math.sin(x * 0.7 + animFrame * 0.1) > 0.3) {
+          ctx.fillRect(x + 2, trackY - h - 10, 2, 5);
+        }
+      }
+      ctx.fillStyle = '#1c1050';
+      for (let x = 4; x < gW; x += 11) {
+        const h = 18 + Math.sin(x * 0.3 + 1) * 5 | 0;
+        ctx.fillRect(x, trackY - h, 9, h);
+        ctx.fillRect(x + 2, trackY - h - 6, 6, 6);
+        if (animPhase === 'celebrating' && Math.sin(x * 0.5 + animFrame * 0.08) > 0.2) {
+          ctx.fillRect(x + 3, trackY - h - 11, 2, 5);
+        }
+      }
+
+      ctx.fillStyle = '#B91C1C';
+      ctx.fillRect(0, trackY, gW, TRACK_H);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      for (let x = (animFrame * -1.5 % 24); x < gW; x += 24) {
+        ctx.fillRect(x, trackY + 3, 14, 2);
+        ctx.fillRect(x, trackY + TRACK_H - 5, 14, 2);
+        ctx.fillRect(x, trackY + Math.floor(TRACK_H / 2), 14, 1);
+      }
+      ctx.fillStyle = '#DC2626';
+      ctx.fillRect(0, trackY + 6, gW, TRACK_H - 12);
+
+      const cs = 5;
+      for (let r = 0; r < Math.ceil(TRACK_H / cs); r++) {
+        for (let c = 0; c < 2; c++) {
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#FFF' : '#111';
+          ctx.fillRect(finishX + c * cs, trackY + r * cs, cs, cs);
+        }
+      }
+      ctx.fillStyle = '#EEE';
+      ctx.fillRect(finishX, trackY - 52, 3, 52);
+      ctx.fillRect(finishX + cs * 2 - 1, trackY - 52, 3, 52);
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(finishX - 4, trackY - 28, cs * 2 + 10, 3);
+      ctx.fillRect(finishX - 4, trackY - 35, cs * 2 + 10, 3);
+      ctx.fillStyle = '#FFF';
+      ctx.fillRect(finishX - 4, trackY - 32, cs * 2 + 10, 4);
+
+      const charBaseY = trackY - 44;
+      const runFrame = Math.floor(animFrame / 7) % 2;
+
+      if (animPhase === 'running') {
+        drawBgRunner(charX - 45, trackY - 24, runFrame, '#DC2626');
+        drawBgRunner(charX - 80, trackY - 24, (runFrame + 1) % 2, '#2563EB');
+        drawBgRunner(charX - 60, trackY - 24, runFrame, '#9333EA');
+      } else {
+        drawBgRunner(finishX - 30, trackY - 24, runFrame, '#DC2626');
+        drawBgRunner(finishX - 65, trackY - 24, (runFrame + 1) % 2, '#2563EB');
+        drawBgRunner(finishX - 48, trackY - 24, runFrame, '#9333EA');
+      }
+
+      if (animPhase === 'running') {
+        charX += runSpeed;
+        if (animFrame % 4 === 0) {
+          ctx.fillStyle = 'rgba(255,200,150,0.25)';
+          ctx.fillRect(charX - 6, trackY - 2, 5, 3);
+          ctx.fillRect(charX - 14, trackY - 5, 3, 3);
+        }
+        drawRunner(charX, charBaseY, runFrame);
+        if (charX > finishX + 30) {
+          animPhase = 'celebrating';
+          celebTimer = 0;
+          for (let i = 0; i < 70; i++) {
+            particles.push({
+              x: charX + Math.random() * 60 - 20,
+              y: charBaseY - Math.random() * 40 + 10,
+              vx: (Math.random() - 0.5) * 5,
+              vy: -Math.random() * 5 - 1,
+              color: ['#FFD700','#FF6B6B','#4ECDC4','#FF69B4','#7C3AED','#FFF','#22C55E'][Math.floor(Math.random()*7)],
+              size: Math.random() * 4 + 2,
+              life: 1
+            });
+          }
+        }
+      } else {
+        celebTimer++;
+        const jumpY = Math.abs(Math.sin(celebTimer * 0.12)) * 12;
+        drawRunner(charX, charBaseY - jumpY, 2);
+
+        particles = particles.filter(p => p.life > 0);
+        particles.forEach(p => {
+          ctx.globalAlpha = Math.min(1, p.life);
+          ctx.fillStyle = p.color;
+          const w = p.size * (0.5 + 0.5 * Math.abs(Math.sin(animFrame * 0.05 + p.x)));
+          ctx.fillRect(p.x, p.y, w, p.size);
+          ctx.globalAlpha = 1;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1;
+          p.vx *= 0.99;
+          p.life -= 0.003;
+        });
+
+        if (celebTimer % 25 === 0 && celebTimer < 280) {
+          for (let i = 0; i < 12; i++) {
+            particles.push({
+              x: Math.random() * gW, y: -5,
+              vx: (Math.random() - 0.5) * 2,
+              vy: Math.random() * 2 + 0.5,
+              color: ['#FFD700','#FF6B6B','#4ECDC4','#FF69B4','#7C3AED','#FFF','#22C55E'][Math.floor(Math.random()*7)],
+              size: Math.random() * 4 + 2,
+              life: 1
+            });
+          }
+        }
+
+        if (fontReady && celebTimer > 15) {
+          const show = celebTimer > 60 || Math.floor(celebTimer / 8) % 2 === 0;
+          if (show) {
+            const ws = Math.min(16, Math.floor(gW / 24));
+            ctx.font = ws + 'px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            const wy = 80 + Math.sin(celebTimer * 0.06) * 3;
+            ctx.fillStyle = 'rgba(255,215,0,0.15)';
+            ctx.fillText('EABHA WINS!', gW/2, wy - 2);
+            ctx.fillText('EABHA WINS!', gW/2 + 2, wy);
+            ctx.fillText('EABHA WINS!', gW/2 - 2, wy);
+            ctx.fillText('EABHA WINS!', gW/2, wy + 2);
+            ctx.fillStyle = '#B8860B';
+            ctx.fillText('EABHA WINS!', gW/2 + 2, wy + 2);
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText('EABHA WINS!', gW/2, wy);
+          }
+        }
+
+        if (celebTimer > 340) {
+          animPhase = 'running';
+          charX = -60;
+          particles = [];
+        }
+      }
+
+      animFrame++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    /* ===== INIT ===== */
+    loadState();
+    resizeBanner();
+    window.addEventListener('resize', resizeBanner);
+    gameLoop();
+    goToToday();
+  </script>
+</body>
+</html>
