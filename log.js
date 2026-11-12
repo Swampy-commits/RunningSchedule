@@ -66,7 +66,6 @@
       day.querySelector('.log-btn').textContent = 'Logged';
     });
     if (window.eabhaRefresh) window.eabhaRefresh();
-    if (role === 'niall' && !document.getElementById('coach').hidden) renderCoach();
   }
 
   window.eabhaAfterRender = function () {
@@ -248,22 +247,7 @@
 
   function signedInUi() {
     const signBtn = document.getElementById('signBtn');
-    signBtn.textContent = token ? 'Lock' : 'Sign in';
-    let coachBtn = document.getElementById('coachBtn');
-    if (role === 'niall') {
-      if (!coachBtn) {
-        coachBtn = document.createElement('button');
-        coachBtn.id = 'coachBtn';
-        coachBtn.type = 'button';
-        coachBtn.className = 'guide-btn';
-        coachBtn.textContent = 'Coach';
-        document.querySelector('.sticky-actions').append(coachBtn);
-        coachBtn.addEventListener('click', showCoach);
-      }
-    } else if (coachBtn) {
-      coachBtn.remove();
-      hideCoach();
-    }
+    signBtn.textContent = token ? 'Sign out' : 'Sign in';
   }
 
   function install() {
@@ -417,17 +401,33 @@
     });
   }
 
+  function savedToken() {
+    const local = localStorage.getItem(TOKEN_KEY);
+    if (local) return local;
+    const older = sessionStorage.getItem(TOKEN_KEY);
+    if (!older) return '';
+    localStorage.setItem(TOKEN_KEY, older);
+    sessionStorage.removeItem(TOKEN_KEY);
+    return older;
+  }
+  function storeToken(value) {
+    if (value) localStorage.setItem(TOKEN_KEY, value);
+    else localStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+  }
+
   function lock() {
     token = '';
     role = '';
     logs = {};
-    sessionStorage.removeItem(TOKEN_KEY);
+    storeToken('');
     hideCoach();
     document.querySelectorAll('.log-strip').forEach(el => el.remove());
     document.querySelectorAll('.log-btn').forEach(btn => { btn.textContent = 'Log'; });
     restoreLocalTicks();
     signedInUi();
     if (window.eabhaRefresh) window.eabhaRefresh();
+    if (window.eabhaSignedOut) window.eabhaSignedOut();
   }
 
   async function signIn() {
@@ -438,13 +438,12 @@
       const data = await api('/api/session', { method: 'POST', body: JSON.stringify({ role: who, pin }) });
       token = data.token;
       role = data.role;
-      sessionStorage.setItem(TOKEN_KEY, token);
+      storeToken(token);
       document.getElementById('pinInput').value = '';
       closeModal('signModal');
       logs = (await api('/api/logs')).logs || {};
       signedInUi();
       paint();
-      if (role === 'niall') showCoach();
     } catch (e) {
       document.getElementById('signError').textContent = e.message;
     }
@@ -452,20 +451,14 @@
 
   async function boot() {
     try {
-      const saved = sessionStorage.getItem(TOKEN_KEY) || '';
+      const saved = savedToken();
       const res = await fetch('/api/session', { headers: saved ? { Authorization: 'Bearer ' + saved } : {} });
       if (!res.ok) return;
       const data = await res.json();
       if (data.logging !== true) return;
       ready = true;
-      const footer = document.querySelector('.footer p:last-child');
-      if (footer && !document.getElementById('dashLink')) {
-        const link = document.createElement('a');
-        link.id = 'dashLink';
-        link.href = 'dashboard.html';
-        link.textContent = 'Dashboard';
-        footer.append(link);
-      }
+      const dashTab = document.getElementById('dashTab');
+      if (dashTab) dashTab.hidden = false;
       install();
       if (data.role) {
         token = saved;
@@ -481,5 +474,5 @@
     }
   }
 
-  boot();
+  window.startLog = boot;
 })();

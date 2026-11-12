@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Eabha's All-Ireland cross country training, Monday 2 November to Sunday 6 December 2026.">
+  <meta name="description" content="Sign in to open the training pages.">
   <meta name="theme-color" content="#06021a">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2306021a'/%3E%3Crect x='3' y='8' width='10' height='2' fill='%234ECDC4'/%3E%3C/svg%3E">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Eabha's Training Schedule</title>
+  <title>Sign in</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="log.css">
   <style>
@@ -51,6 +51,18 @@ button, input, textarea { font-family: inherit; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+.site-tabs {
+  display: flex; gap: 8px; align-items: center;
+  padding: 8px 12px; background: #0f0a2e;
+  position: sticky; top: 0; z-index: 40;
+}
+.site-tabs a {
+  color: #fff; text-decoration: none; font-weight: 800;
+  min-height: 40px; display: inline-flex; align-items: center;
+  padding: 6px 14px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.28);
+}
+.site-tabs a[aria-current="page"] { background: #FFD700; color: #1a1050; border-color: #FFD700; }
 
 .banner-wrap { position: relative; background: #06021a; overflow: hidden; }
 .banner-wrap canvas { display: block; width: 100%; height: auto; }
@@ -365,1005 +377,177 @@ body.guide-open .guide-btn { flex: 1; }
   body { background: #fff; }
 }
 
-  </style>
+  
+.sign-out { margin-left: auto; background: none; border: none; color: #fff; font-weight: 800; cursor: pointer; min-height: 40px; }
+.gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: #0f0a2e; }
+.gate-card { width: min(100%, 24rem); background: #fff; color: var(--text); border-radius: 16px; padding: 18px 16px; }
+.gate-card h1 { font-family: var(--sans); font-size: 1.25rem; margin: 0 0 8px; letter-spacing: 0; }
+.gate-card p { margin: 0 0 12px; }
+.gate-card a { color: var(--primary); }
+.gate-choices { display: flex; gap: 8px; margin-bottom: 12px; }
+.gate-choices button, .gate-card .unlock {
+  min-height: 44px; border-radius: 12px; border: 1px solid var(--border);
+  font: inherit; font-weight: 800; background: #fff; padding: 8px 14px; cursor: pointer;
+}
+.gate-choices button[aria-pressed="true"], .gate-card .unlock { background: #1E293B; color: #fff; border-color: #1E293B; }
+.gate-card label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.gate-card input { width: 100%; min-height: 44px; margin: 6px 0 12px; padding: 8px 12px; font-size: 16px; border-radius: 12px; border: 1px solid var(--border); }
+.gate-error { color: #9F1239; font-weight: 700; }
+</style>
   <script>document.documentElement.classList.add('js')</script>
-  <noscript><style>.week { display: block !important; } #guide { display: block !important; }</style></noscript>
+  <noscript><p>Sign in needs JavaScript.</p></noscript>
 </head>
 <body>
-  <div class="banner-wrap">
-    <canvas id="game" aria-hidden="true"></canvas>
-    <div class="scanlines"></div>
-    <div class="crt-glow"></div>
-  </div>
-  <header class="intro">
-    <div class="intro-inner">
-      <h1 class="sr-only">Eabha's Training Schedule</h1>
-      <p class="plan-title">All-Ireland build: Mon 2 Nov to Sun 6 Dec 2026 (main peak target: All-Ireland, Sun 6 Dec)</p>
-      <p class="countdown" id="countdown"></p>
-      <div class="week-chips" aria-label="Weeks"><button type="button" class="chip" data-week="0" aria-current="false"><strong>Week 1</strong><span>2 to 8 Nov</span></button>
-<button type="button" class="chip" data-week="1" aria-current="false"><strong>Week 2</strong><span>9 to 15 Nov</span></button>
-<button type="button" class="chip" data-week="2" aria-current="false"><strong>Week 3</strong><span>16 to 22 Nov</span></button>
-<button type="button" class="chip" data-week="3" aria-current="false"><strong>Week 4</strong><span>23 to 29 Nov</span></button>
-<button type="button" class="chip" data-week="4" aria-current="false"><strong>Week 5</strong><span>30 Nov to 6 Dec</span></button></div>
-      <p class="overall" id="overall"></p>
-    </div>
-  </header>
-  <div class="sticky-bar">
-    <div class="sticky-inner">
-      <div class="week-nav">
-        <button type="button" class="nav-btn" id="prevWeek" aria-label="Previous week">&#8249;</button>
-        <div class="week-info">
-          <div class="wk" id="weekTitle"></div>
-          <div class="ph" id="weekPhase"></div>
-        </div>
-        <button type="button" class="nav-btn" id="nextWeek" aria-label="Next week">&#8250;</button>
-      </div>
-      <div class="sticky-actions">
-        <button type="button" class="today-jump" id="todayBtn">Today</button>
-        <button type="button" class="guide-btn" id="guideBtn" aria-expanded="false" aria-controls="guide">Guide</button>
-      </div>
-    </div>
-  </div>
-  <main id="schedule" class="wrap">
-    <section class="week" id="week-1" data-label="Week 1 of 5" data-phase="2 to 8 Nov">
-  <header class="week-intro">
-    <h2>Week 1 <span>2 to 8 Nov</span></h2>
-    <p class="phase">Race week (Cork County B, Sat 7 Nov)</p>
-    <p class="km-line">Est. running ~15 km incl. race (~19 km if Sunday is the optional easy jog)</p>
-    <p class="week-note">CONFIRMED: Cork County B U17 is Saturday 7 Nov. Monday is a full rest day (the day after Sunday's race). Tuesday club session is cut to about half the reps. Pre-race rule: of the 2 days before the race, Thursday 5 Nov is fully OFF (club session skipped) and Friday 6 Nov is a 15 min shakeout plus strides. Wednesday is the only S&amp;C (light, no legs, can be skipped); no Friday S&amp;C (race week). No hill sprints. If she is not entering Cork B: Thursday becomes the light club session (strides only), Friday an easy 20 min jog, and Saturday an easy long run of about 50 min (~8 km, RPE 3 to 4) on a soft surface.</p>
-    <div class="bar" aria-hidden="true"><span></span></div>
-    <p class="week-count"></p>
-    <p class="week-complete" hidden>WEEK COMPLETE</p>
-  </header>
-  <article class="day day-rest" id="d-2026-11-02" data-date="2026-11-02" data-label="Monday 2 Nov" data-effort="Rest">
-  <header class="day-head">
-    <div>
-      <h3>Monday <span>2 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0 (optional 20 to 30 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-02" aria-pressed="false" aria-label="Mark Monday 2 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-02" aria-label="Log a note for Monday 2 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Full rest day (the day after Sunday's race). Optional only: 20 to 30 min cross trainer, very easy (RPE 2 to 3), if the legs feel fine. Default is nothing. No S&amp;C, no running.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Home</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Monday is her normal rest day. Take it fully if the calf or back feels tight after the race.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-11-03" data-date="2026-11-03" data-label="Tuesday 3 Nov" data-effort="Hard" data-verdict="Club: TAPER DOWN">
-  <header class="day-head">
-    <div>
-      <h3>Tuesday <span>3 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-03" aria-pressed="false" aria-label="Mark Tuesday 3 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-03" aria-label="Log a note for Tuesday 3 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-taper">Club: TAPER DOWN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly session at 6:45pm, cut to half of Glenn's fartlek, no hill sprints. Glenn's set (Week 15): 6 x (2min fast / 1min easy) plus short hill sprints. Eabha's version: warm-up: standard (10 min easy jog, drills, 3 x 80m strides). Main set: 3 x 2min at threshold-to-XC effort (RPE 7) with 90 sec easy jog between (Glenn's 1 min is too short for her). Skip the hill sprints. Cool-down: 5 to 8 min easy jog. Total hard work 6 min (cap 8 min).</p></div>
-  <div class="club club-taper"><p class="k">Club session: what to cut or do instead, and why</p><p>Glenn's set: 6 x 2min fast / 1min easy plus hill sprints. Do only 3 x 2min (half, hard work 6 min), take 90 sec easy jog instead of his 1 min, skip the hill sprints (calf). Reason: 4 days before Cork B (Sat 7 Nov) and 2 days after Munster U17, so sharpen only.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>7</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: threshold-to-XC effort, same time both reps. Add her 5k time later.</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>90 sec easy jog between reps (don't shorten)</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers, not spikes. Take full recoveries. Stop the session if the calf tightens. Short on purpose: 4 days before Cork B and 2 days after Sunday's race.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-04" data-date="2026-11-04" data-label="Wednesday 4 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Wednesday <span>4 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>20 to 25 min (+ optional 15 to 20 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-04" aria-pressed="false" aria-label="Mark Wednesday 4 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-04" aria-label="Log a note for Wednesday 4 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, light, 20 to 25 min (the only S&amp;C of race week): core (planks, dead bugs, side planks, 2 to 3 sets each), upper body, band work, hip and ankle mobility. No leg work: no squats or lunges, no calf raises, no jumping or plyometrics. Optional after: cross trainer, easy, 15 to 20 min continuous, RPE 3. Can be skipped if she feels tired.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home or gym; cross trainer at home</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation (cross trainer)</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest 30 to 60 sec between sets</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>No S&amp;C after today this week (no Friday S&amp;C). Light so the legs are fresh for Saturday. Stop if the back or calf feels sore. Cross trainer is not counted in the running km.</p></div>
-</article>
-<article class="day day-rest" id="d-2026-11-05" data-date="2026-11-05" data-label="Thursday 5 Nov" data-effort="Rest" data-verdict="Club: SKIP">
-  <header class="day-head">
-    <div>
-      <h3>Thursday <span>5 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-05" aria-pressed="false" aria-label="Mark Thursday 5 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-05" aria-label="Log a note for Thursday 5 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span><span class="badge badge-skip">Club: SKIP</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>OFF. Full rest day, 2 days before the race. No running, no S&amp;C, no cross trainer. Skip the Belgooly session.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Replacement: full rest day, no session at all. Glenn's set this week is 5 x 800m with 200m jog plus strides, which is a hard session. Reason: the club session is 2 days before Cork B.</p></div>
-  
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Niall's rule: in the 2 days before a race, one day fully off and the other a shakeout. Thursday off, Friday shakeout. Carb-rich meals and plenty of fluids.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-06" data-date="2026-11-06" data-label="Friday 6 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Friday <span>6 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>15 min, ~2.5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-06" aria-pressed="false" aria-label="Mark Friday 6 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-06" aria-label="Log a note for Friday 6 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Pre-race shakeout: 15 min very easy jog on a soft surface (RPE 3), then 4 x 60m strides, relaxed, in trainers. Walk back after each stride. No S&amp;C.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Soft surface</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 (strides relaxed)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Full walk-back after each stride</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Day before the race: carb-rich meals, fluids, get kit and spikes ready, early night. Cut to 10 min if she is tired or the calf is niggly.</p></div>
-</article>
-<article class="day day-race" id="d-2026-11-07" data-date="2026-11-07" data-label="Saturday 7 Nov" data-effort="Race" data-verdict="SKIP club session (racing)">
-  <header class="day-head">
-    <div>
-      <h3>Saturday <span>7 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>4 to 5 km race, ~7 km with warm up and cool down</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-07" aria-pressed="false" aria-label="Mark Saturday 7 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-07" aria-label="Log a note for Saturday 7 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-race">Race</span><span class="badge badge-skip">SKIP club session (racing)</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Cork County B U17 race, Lyre, Clonakilty. Race-day warm-up (finish about 10 min before the start): 15 min easy jog (RPE 3 to 4), drills 2 x 20m each (A-skips, B-skips, high knees, butt kicks), then 4 x 80m strides building to race pace. Race: 4 to 5 km, even first km, strong middle, push the last 500m. Cool-down: 10 min easy jog and stretches within 15 min of finishing. If not racing: easy long run of about 50 min, RPE 3 to 4.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Glenn's Saturday session is 5 x 800m LT with 30 sec recovery; skip it because she is racing Cork B (noon, near Clonakilty) instead of the club session.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Race course</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>8</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>XC race effort, controlled start</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>n/a. Walk and keep warm between the warm-up and the start</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Spikes for the race only. Change into dry layers straight after. Cool-down matters for the calves.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-08" data-date="2026-11-08" data-label="Sunday 8 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Sunday <span>8 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>20 to 30 min (jog ~3.5 to 4.5 km)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-08" aria-pressed="false" aria-label="Mark Sunday 8 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-08" aria-label="Log a note for Sunday 8 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Easy recovery, 20 to 30 min. Option A: cross trainer, continuous, resistance light to moderate, smooth cadence (RPE 2 to 3), then 5 min light stretching. Option B: easy jog 20 to 30 min on a soft surface, only if the calves feel fine. Either way, nothing hard.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Home (cross trainer) or soft surface (jog)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>2 to 3</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>None (continuous)</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Gentle flush after the race. Matches Glenn's caption: anyone racing the County B's does only a slow 5k recovery run on Sunday (his U15 long run of 50 min and U16+ 70 min are for non-racers). If the calves are tired keep it to 20 min or take the day fully off.</p></div>
-</article>
-</section>
-<section class="week" id="week-2" data-label="Week 2 of 5" data-phase="9 to 15 Nov">
-  <header class="week-intro">
-    <h2>Week 2 <span>9 to 15 Nov</span></h2>
-    <p class="phase">Build</p>
-    <p class="km-line">Est. running ~29 km (Glenn's Week 16 plan: 47 km; about 24 km if Thursday is the cross trainer)</p>
-    <p class="week-note">Back to about the Week 14 level, not above it. Glenn's actual Week 16 sets are now in (posted Tue 10 Nov). Monday is a full rest day. Two hard sessions only: Tuesday's Belgooly progression run, and Saturday's Cork Athletics juvenile squad training (hard day 2). Thursday's Belgooly club session (4 x 1km) is SKIP: 25 to 30 min easy on grass or the cross trainer, plus 4 x 80m relaxed strides if she is fresh. Saturday's Belgooly session (3 x 5 x 400m LT) stays SKIP. Sunday easy 35 to 45 min (not 50 min, because it follows a hard Saturday). S&amp;C: Wednesday light, Friday light (because Saturday is hard). MUNSTER B CONTINGENCY (UNCONFIRMED; Sun 15 Nov, Co Clare; not assumed, as Glenn's entry list on Mon 9 Nov didn't include her): if she is racing, Thursday 12 Nov stays this easy day, Friday 13 Nov is fully OFF (no S&amp;C this week apart from Wednesday's light session), Saturday 14 Nov is a 15 min shakeout plus 4 x 60m strides instead of the Cork squad session, and Sunday is the race instead of the easy run.</p>
-    <div class="bar" aria-hidden="true"><span></span></div>
-    <p class="week-count"></p>
-    <p class="week-complete" hidden>WEEK COMPLETE</p>
-  </header>
-  <article class="day day-rest" id="d-2026-11-09" data-date="2026-11-09" data-label="Monday 9 Nov" data-effort="Rest">
-  <header class="day-head">
-    <div>
-      <h3>Monday <span>9 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0 (optional 20 to 30 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-09" aria-pressed="false" aria-label="Mark Monday 9 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-09" aria-label="Log a note for Monday 9 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Full rest day. Optional only: 20 to 30 min cross trainer, very easy (RPE 2 to 3), if she feels she needs it. Default is nothing. No S&amp;C, no running (Tuesday is a hard session).</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Home</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Monday is her weekly rest day, so she goes into Tuesday fresh. Skip the optional cross trainer if anything feels tight.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-11-10" data-date="2026-11-10" data-label="Tuesday 10 Nov" data-effort="Hard" data-verdict="Club: DO AS WRITTEN">
-  <header class="day-head">
-    <div>
-      <h3>Tuesday <span>10 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~9 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-10" aria-pressed="false" aria-label="Mark Tuesday 10 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-10" aria-label="Log a note for Tuesday 10 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-do">Club: DO AS WRITTEN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly session at 6:45pm, Glenn's set as written (hill sprints capped). Warm-up: 2 km easy jog (about 12 min, RPE 3 to 4), then drills. Main set: 5.5 km progression run, continuous: first 2 km easy-to-steady (RPE 4 to 5), next 2 km steady (RPE 5 to 6), last 1.5 km at threshold (RPE 6 to 7), never faster than threshold. Then 4 to 6 short hill sprints, 8 to 10 sec on a moderate grass slope, full walk-down recovery. Cool-down: 1 km easy jog, then calf, hip and hamstring stretches.</p></div>
-  <div class="club club-do"><p class="k">Club session: what to cut or do instead, and why</p><p>Glenn's set: 5.5 km progression run plus short hill sprints. Hard day 1 of 2, after a full rest Monday and 3 days after Cork B. The progression only reaches threshold, so it fits; cap hill sprints at 4 to 6 and skip them if the calf is tight.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (road, track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>4 rising to 7 (hill sprints 8 to 9)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: each section a notch quicker; the finish is threshold, not race pace. Add her 5k time later.</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>None in the progression run (continuous). Hill sprints: full walk-down</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers. Skip the hill sprints if the calf is tight. Stop the session if the calf or back tightens. 3 days after the Cork B race, so hold back if her legs are still heavy.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-11" data-date="2026-11-11" data-label="Wednesday 11 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Wednesday <span>11 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>20 to 25 min (+ optional 20 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-11" aria-pressed="false" aria-label="Mark Wednesday 11 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-11" aria-label="Log a note for Wednesday 11 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, light, 20 to 25 min: core (planks, dead bugs, side planks, 2 to 3 sets each), upper body, hip stability and mobility, band work. No heavy calf raises, no plyometrics, minimal leg loading. Optional after: cross trainer, easy, 20 min continuous, RPE 3 to 4.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home or gym; cross trainer at home</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation (cross trainer)</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest 30 to 60 sec between sets; cross trainer continuous</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>S&amp;C session 1 of 2 (both light this week, because Saturday is a hard session). Nothing new, nothing that leaves her sore. Cross trainer is not counted in the running km.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-12" data-date="2026-11-12" data-label="Thursday 12 Nov" data-effort="Easy" data-verdict="Club: SKIP">
-  <header class="day-head">
-    <div>
-      <h3>Thursday <span>12 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>25 to 30 min, ~4.5 to 5 km (or 25 to 30 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-12" aria-pressed="false" aria-label="Mark Thursday 12 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-12" aria-label="Log a note for Thursday 12 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-skip">Club: SKIP</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Skip the Belgooly club session. Easy day: 25 to 30 min at RPE 3 to 4 on grass (or on the cross trainer). If she feels fresh and is running on grass, add 4 x 80m relaxed strides with a full walk-back after each. No hard running.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Replacement: 25 to 30 min easy (RPE 3 to 4) on grass or the cross trainer, plus 4 x 80m relaxed strides if she is fresh and running on grass. Glenn's set is 4 x 1km with 2 min recovery plus 5 x 80m strides. Reason: Niall decided to skip Thursday's club session this week; Saturday's Cork Athletics juvenile squad session is hard day 2 instead, which keeps two hard days with three days between them. (Munster B on Sunday 15 Nov is unconfirmed; if she is racing, Thursday stays this easy day.)</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Grass or soft trail, or home (cross trainer)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4 (strides fast but relaxed)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation. Strides about 800 to 1500 feel</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Walk back after each stride (if running); none (cross trainer)</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers if she runs. Keep it genuinely easy. Skip the strides if the calf or back is tight, or if she is not fresh. If Thursday is the cross trainer, it is not counted in the running km.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-13" data-date="2026-11-13" data-label="Friday 13 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Friday <span>13 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>25 to 30 min</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-13" aria-pressed="false" aria-label="Mark Friday 13 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-13" aria-label="Log a note for Friday 13 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, light, 25 to 30 min: core (planks, dead bugs, side planks, 2 to 3 sets each), upper body, hip stability and mobility, band work. No heavy calf raises, no plyometrics, no heavy leg loading. No running today.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home or gym</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>2 to 3</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest 45 to 60 sec between sets</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>S&amp;C session 2 of 2, kept light because Saturday is a hard session (Cork Athletics juvenile squad). No heavy calf raises, no plyos, nothing new, nothing that leaves her sore. No running.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-11-14" data-date="2026-11-14" data-label="Saturday 14 Nov" data-effort="Hard" data-verdict="Club: SKIP">
-  <header class="day-head">
-    <div>
-      <h3>Saturday <span>14 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~8 km (depends on the squad session; hard work capped at 20 to 25 min)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-14" aria-pressed="false" aria-label="Mark Saturday 14 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-14" aria-label="Log a note for Saturday 14 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-skip">Club: SKIP</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Cork Athletics juvenile squad training session, hard day 2. Do the squad's session as the coaches set it. Warm-up: if the coaches don't set one, use the standard (10 to 12 min easy jog, drills, 3 x 80m strides). Cap total hard running at about 20 to 25 min; if the session looks long or very hard, stop at that cap and finish with easy jogging. Cool-down: 5 to 8 min easy jog, then stretches. Trainers, unless the coaches say spikes. Skip the Belgooly Saturday session.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Glenn's set: 3 sets of (5 x 400m at LT pace with 30 sec recovery), 2 min between sets, plus strides: 6 km of threshold. Skip the Belgooly session. Replacement this week: Cork Athletics juvenile squad training, as the coaches set it, capping hard running at about 20 to 25 min. Reason: Niall decided Saturday's Cork squad session is hard day 2 (Tuesday remains hard day 1; Thursday club is skipped). (Munster B on Sunday 15 Nov is unconfirmed; if she is racing, do a 15 min easy shakeout plus 4 x 60m strides instead of the squad session.)</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Cork Athletics squad venue (as announced)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>As the coaches set (hard work capped at 20 to 25 min)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: follow the coaches; cap the hard work rather than chase every rep.</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>As the coaches set; do not shorten recoveries</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers unless the coaches say spikes (one spike session a week at most). Stop if the calf or back tightens. If no squad notice has been published, confirm the time and place before travelling. If she is racing Munster B on Sunday (unconfirmed), replace this with a 15 min easy shakeout plus 4 x 60m strides.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-15" data-date="2026-11-15" data-label="Sunday 15 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Sunday <span>15 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>35 to 45 min, ~6 to 7.5 km (or 35 to 45 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-15" aria-pressed="false" aria-label="Mark Sunday 15 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-15" aria-label="Log a note for Sunday 15 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Easy run or cross trainer: 35 to 45 min continuous at RPE 3 to 4 (not 50 min, because it follows a hard Saturday). No steady finish. If she is racing Munster B instead (unconfirmed): race-day warm-up and race as on 7 Nov, then a 10 min cool-down.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Soft surface (grass, trail, park) or home (cross trainer)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Walk breaks are fine</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Truly easy pace. Keep it to 35 to 45 min (shorter than Glenn's U15 50 min cap) because Saturday was a hard session. If the calf or back is sore, use the cross trainer or take the day fully off. Cross trainer minutes are not counted in the running km.</p></div>
-</article>
-</section>
-<section class="week" id="week-3" data-label="Week 3 of 5" data-phase="16 to 22 Nov">
-  <header class="week-intro">
-    <h2>Week 3 <span>16 to 22 Nov</span></h2>
-    <p class="phase">Peak load (max about 10% up on Week 2)</p>
-    <p class="km-line">Est. running ~33 km</p>
-    <p class="week-note">The biggest week of the block, with two hard sessions only (Tuesday and Thursday). Monday is a full rest day. If anything feels sore, cut it back rather than push on. No 45 sec hill reps (calf risk). S&amp;C: Wednesday light, Friday main (the last moderate S&amp;C of the block).</p>
-    <div class="bar" aria-hidden="true"><span></span></div>
-    <p class="week-count"></p>
-    <p class="week-complete" hidden>WEEK COMPLETE</p>
-  </header>
-  <article class="day day-rest" id="d-2026-11-16" data-date="2026-11-16" data-label="Monday 16 Nov" data-effort="Rest">
-  <header class="day-head">
-    <div>
-      <h3>Monday <span>16 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0 (optional 20 to 30 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-16" aria-pressed="false" aria-label="Mark Monday 16 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-16" aria-label="Log a note for Monday 16 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Full rest day. Optional only: 20 to 30 min cross trainer, very easy (RPE 2 to 3), if she feels she needs it. Default is nothing. No S&amp;C, no running (Tuesday is a hard session).</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Home</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Monday is her weekly rest day, so she goes into Tuesday fresh. Skip the optional cross trainer if anything feels tight.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-11-17" data-date="2026-11-17" data-label="Tuesday 17 Nov" data-effort="Hard" data-verdict="Club: DO AS WRITTEN">
-  <header class="day-head">
-    <div>
-      <h3>Tuesday <span>17 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~8 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-17" aria-pressed="false" aria-label="Mark Tuesday 17 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-17" aria-label="Log a note for Tuesday 17 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-do">Club: DO AS WRITTEN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly session in full. Default set (if Glenn's differs, use the trimming rule at the top). Warm-up: standard (10 to 12 min easy jog, drills, 3 x 80m strides). Main set: 5 x 1km at XC race effort minus a touch, then optional 4 x 8 to 10 sec hill sprints on a moderate grass slope. Cool-down: 5 to 8 min easy jog. Rule for Glenn's set: cap hard work at 22 min at RPE 7 to 8, keep his recoveries, cap hill sprints at 4.</p></div>
-  <div class="club club-do"><p class="k">Club session: what to cut or do instead, and why</p><p>Hard day 1 of 2 in the biggest week, after a full rest Monday. Keep the default set. Hill sprints optional, capped at 4, skip them if the calf is tight.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>7 to 8 (hill sprints 8 to 9)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: just under XC race effort, even pace, last rep no faster than the first. Add her 5k time later.</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>75 sec easy jog between reps. Hill sprints: full walk-down</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers. Hill sprints short and optional, as in Week 2. Skip them if the calf is tight.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-18" data-date="2026-11-18" data-label="Wednesday 18 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Wednesday <span>18 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>20 to 25 min (+ optional 20 to 25 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-18" aria-pressed="false" aria-label="Mark Wednesday 18 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-18" aria-label="Log a note for Wednesday 18 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, light, 20 to 25 min: core (planks, dead bugs, side planks, 2 to 3 sets each), upper body, hip stability and mobility, band work. No heavy calf raises, no plyometrics, minimal leg loading (Thursday is a hard session). Optional after: cross trainer, easy, 20 to 25 min continuous, RPE 3 to 4.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home or gym; cross trainer at home</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation (cross trainer)</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest 30 to 60 sec between sets; cross trainer continuous</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>S&amp;C session 1 of 2 (the light one), between Tuesday's and Thursday's hard sessions. Nothing new, nothing that leaves her sore. Cross trainer is not counted in the running km.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-11-19" data-date="2026-11-19" data-label="Thursday 19 Nov" data-effort="Hard" data-verdict="Club: DO AS WRITTEN">
-  <header class="day-head">
-    <div>
-      <h3>Thursday <span>19 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~8.5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-19" aria-pressed="false" aria-label="Mark Thursday 19 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-19" aria-label="Log a note for Thursday 19 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-do">Club: DO AS WRITTEN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly session. Default set (if Glenn has 6 x 800m with 30 sec, do 6 with more rest or drop to 4). Warm-up: standard (10 to 12 min easy jog, drills, 3 x 80m strides). Main set: 6 x 800m at threshold. Cool-down: 5 to 8 min easy jog. Rule for Glenn's set: max 6 threshold reps, take 45 sec recovery even if he gives 30, cap hard work at 22 min, no hill sprints.</p></div>
-  <div class="club club-do"><p class="k">Club session: what to cut or do instead, and why</p><p>Hard day 2 of 2. If the calf was sore after Tuesday, drop to 4 reps. Max 6 threshold reps, 45 sec recovery even if Glenn gives 30, cap 22 min of hard work, no hill sprints.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>6 to 7</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: threshold, even pace, last rep no faster than the first</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>45 sec easy jog between reps</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers unless the coach has the session in spikes. If the calf was sore after Tuesday, drop to 4 reps.</p></div>
-</article>
-<article class="day day-moderate" id="d-2026-11-20" data-date="2026-11-20" data-label="Friday 20 Nov" data-effort="Moderate">
-  <header class="day-head">
-    <div>
-      <h3>Friday <span>20 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>30 to 40 min</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-20" aria-pressed="false" aria-label="Mark Friday 20 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-20" aria-label="Log a note for Friday 20 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-moderate">Moderate</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, main session, 30 to 40 min: core (3 sets each), glute and hip stability, single-leg strength, upper body, calf raises 2 x 10 to 12 stopping 3 reps short of failure. No plyometrics. No running today.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home or gym</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>5</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest 45 to 60 sec between sets</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>S&amp;C session 2 of 2 (the main one) and the LAST moderate S&amp;C of the block, 16 days before the All-Ireland. Calf raises stop 3 reps short of failure, no plyos, nothing new. No heavy deadlifts or loaded spinal flexion. If Saturday is swapped in for Thursday (Tue + Sat hard), Friday becomes LIGHT (core and mobility only) and the main session moves to Wednesday.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-21" data-date="2026-11-21" data-label="Saturday 21 Nov" data-effort="Easy" data-verdict="Club: SKIP">
-  <header class="day-head">
-    <div>
-      <h3>Saturday <span>21 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>Option A: 35 to 40 min, ~6.5 km. Option B: 35 to 40 min cross trainer</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-21" aria-pressed="false" aria-label="Mark Saturday 21 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-21" aria-label="Log a note for Saturday 21 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-skip">Club: SKIP</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Saturday alternative to the Belgooly club session (no hard running). Option A: easy run 35 to 40 min, RPE 3 to 4 (first 10 min is the warm-up) on grass or a soft trail, then 4 x 80m strides on grass, relaxed, then 5 min easy walking. Option B: cross trainer, easy: 35 to 40 min continuous, RPE 3 to 4, resistance moderate, smooth cadence, able to chat.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Skip the club hard session and do the easy run or cross trainer in this row instead. Reason: two hard days a week is her limit with the calf and back history, and Saturday would be hard day 3.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Grass or soft trail (option A), home (option B)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4 (strides fast but relaxed)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation. Strides about 800 to 1500 feel</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Walk back after each stride (option A); none (option B)</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>She can still go to the club for the social side but skips the main set. Swap option: if she prefers the Saturday club session, do it instead of Thursday (Tue + Sat hard, Thu easy). S&amp;C stays Wednesday and Friday, but Friday becomes light and Wednesday takes the main session.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-22" data-date="2026-11-22" data-label="Sunday 22 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Sunday <span>22 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>55 to 60 min, ~10 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-22" aria-pressed="false" aria-label="Mark Sunday 22 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-22" aria-label="Log a note for Sunday 22 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Long run, easy: 55 to 60 min continuous at RPE 3 to 4. Optional last 5 min steady (RPE 5), only if she feels good.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Soft surface (grass, trail, park)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4 (last 5 min optional RPE 5)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Walk breaks are fine</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Longest run of the plan. Don't push the last few km. Drop the steady finish if the calf or back is sore.</p></div>
-</article>
-</section>
-<section class="week" id="week-4" data-label="Week 4 of 5" data-phase="23 to 29 Nov">
-  <header class="week-intro">
-    <h2>Week 4 <span>23 to 29 Nov</span></h2>
-    <p class="phase">Sharpen (volume down about 20%)</p>
-    <p class="km-line">Est. running ~26 km</p>
-    <p class="week-note">Running about 20% below peak (~26 km vs ~33 km). Monday is a full rest day. Tuesday trimmed to about 2/3 of Glenn's reps, no hill sprints. Thursday short race-pace reps (5 x 300m only). Saturday easy or cross trainer, no club session. S&amp;C: Wednesday light, Friday light core and mobility only (the last moderate S&amp;C was Fri 20 Nov, 16 days out).</p>
-    <div class="bar" aria-hidden="true"><span></span></div>
-    <p class="week-count"></p>
-    <p class="week-complete" hidden>WEEK COMPLETE</p>
-  </header>
-  <article class="day day-rest" id="d-2026-11-23" data-date="2026-11-23" data-label="Monday 23 Nov" data-effort="Rest">
-  <header class="day-head">
-    <div>
-      <h3>Monday <span>23 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0 (optional 20 to 30 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-23" aria-pressed="false" aria-label="Mark Monday 23 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-23" aria-label="Log a note for Monday 23 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Full rest day. Optional only: 20 to 30 min cross trainer, very easy (RPE 2 to 3). Default is nothing. No S&amp;C, no running.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Home</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Monday is her weekly rest day. Fresh legs for Tuesday, the last big interval session.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-11-24" data-date="2026-11-24" data-label="Tuesday 24 Nov" data-effort="Hard" data-verdict="Club: TAPER DOWN">
-  <header class="day-head">
-    <div>
-      <h3>Tuesday <span>24 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~6.5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-24" aria-pressed="false" aria-label="Mark Tuesday 24 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-24" aria-label="Log a note for Tuesday 24 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-taper">Club: TAPER DOWN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly session at 6:45pm, no hill sprints. Default set (trimmed). Warm-up: standard (10 min easy jog, drills, 3 x 80m strides). Main set: 4 x 800m at XC race effort. Cool-down: 5 to 8 min easy jog. Rule for Glenn's set: do about 2/3 of his reps (round down), cap hard work at 3.2 km or 14 min, keep his recoveries, no hill sprints. This is the last big interval session.</p></div>
-  <div class="club club-taper"><p class="k">Club session: what to cut or do instead, and why</p><p>Cut to about 2/3 of Glenn's reps (round down, e.g. 4 x 800m if he has 6), cap hard work at 3.2 km or 14 min, no hill sprints, keep his recoveries. Reason: 12 days out and the last big interval session, so sharpen, don't build.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>8</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: XC race effort, even pace. Add her XC time later.</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>90 sec easy jog between reps</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers. Finish feeling she could do one more rep.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-25" data-date="2026-11-25" data-label="Wednesday 25 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Wednesday <span>25 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>15 to 20 min (+ optional 20 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-25" aria-pressed="false" aria-label="Mark Wednesday 25 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-25" aria-label="Log a note for Wednesday 25 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, light, 15 to 20 min: core (dead bugs, side planks, planks, 2 sets each), upper body, glute bridges, hip and ankle mobility, band work. Bodyweight only, no calf raises, no plyometrics. Optional after: cross trainer, easy, 20 min continuous, RPE 3.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home; cross trainer at home</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>2 to 3</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation (cross trainer)</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest as needed; cross trainer continuous</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Light because Thursday has race-pace reps. The last moderate S&amp;C was Fri 20 Nov (16 days out), so nothing new or sore now. Cross trainer is not counted in the running km.</p></div>
-</article>
-<article class="day day-moderate" id="d-2026-11-26" data-date="2026-11-26" data-label="Thursday 26 Nov" data-effort="Moderate" data-verdict="Club: TAPER DOWN">
-  <header class="day-head">
-    <div>
-      <h3>Thursday <span>26 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-26" aria-pressed="false" aria-label="Mark Thursday 26 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-26" aria-label="Log a note for Thursday 26 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-moderate">Moderate</span><span class="badge badge-taper">Club: TAPER DOWN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly social session, light version (replaces the full threshold set). Warm-up: standard (10 min easy jog, drills, 3 x 80m strides). Main set: 5 x 300m at 3k pace feel, smooth. Cool-down: 5 to 8 min easy jog. Rule for Glenn's set: whatever he has, do only these 5 x 300m (or 4 if she feels flat) and jog the rest with the group.</p></div>
-  <div class="club club-taper"><p class="k">Club session: what to cut or do instead, and why</p><p>Replace Glenn's main set with 5 x 300m at 3k pace feel only (4 if she feels flat), jog the rest with the group. Reason: 10 days out, keeps leg speed without the threshold volume.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>8 (only 5 reps of 300m)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: 3k pace, quick but relaxed, not a sprint</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>90 sec walk or easy jog between reps</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>The last sharp session before the final week. Stop while she is still running well.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-27" data-date="2026-11-27" data-label="Friday 27 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Friday <span>27 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>15 to 20 min</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-27" aria-pressed="false" aria-label="Mark Friday 27 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-27" aria-label="Log a note for Friday 27 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, light, 15 to 20 min: core activation (dead bugs, side planks, 2 sets each), glute bridges, hip and ankle mobility, band work. No lifting, no calf raises, no plyometrics. No running today.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>2 to 3</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest as needed</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>The last proper S&amp;C of the block, 9 days before the All-Ireland. Light core and mobility only, so nothing is sore for Saturday or the final week. The last moderate S&amp;C was Fri 20 Nov (16 days out).</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-28" data-date="2026-11-28" data-label="Saturday 28 Nov" data-effort="Easy" data-verdict="Club: SKIP">
-  <header class="day-head">
-    <div>
-      <h3>Saturday <span>28 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>Option A: 35 to 40 min, ~6.5 km. Option B: 35 to 40 min cross trainer</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-28" aria-pressed="false" aria-label="Mark Saturday 28 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-28" aria-label="Log a note for Saturday 28 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-skip">Club: SKIP</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Easy alternative, no hard running and no Belgooly main set. Option A: easy run 35 to 40 min, RPE 3 to 4 (first 10 min is the warm-up) on grass or a soft trail, then 4 x 80m strides on grass, relaxed, then 5 min easy walking. Option B: cross trainer, easy: 35 to 40 min continuous, RPE 3 to 4, resistance moderate, smooth cadence, able to chat.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Skip the club session and do the easy run or cross trainer in this row instead. Reason: volume is down 20% and both quality sessions are already done this week.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Grass or soft trail (option A), home (option B)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4 (strides fast but relaxed)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation. Strides about 800 to 1500 feel</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Walk back after each stride (option A); none (option B)</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>No club session this week. Keep it genuinely easy and finish feeling fresh for Sunday and the final week. If she swapped the Saturday club session for Thursday in earlier weeks, keep Thursday as the 5 x 300m session and make Saturday this easy day.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-11-29" data-date="2026-11-29" data-label="Sunday 29 Nov" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Sunday <span>29 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>45 min, ~7.5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-29" aria-pressed="false" aria-label="Mark Sunday 29 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-29" aria-label="Log a note for Sunday 29 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Easy run 45 min continuous at RPE 3 to 4, flat. No steady finish this week.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Soft surface</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 to 4</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Walk breaks are fine</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Easy and flat.</p></div>
-</article>
-</section>
-<section class="week" id="week-5" data-label="Week 5 of 5" data-phase="30 Nov to 6 Dec">
-  <header class="week-intro">
-    <h2>Week 5 <span>30 Nov to 6 Dec</span></h2>
-    <p class="phase">Taper (volume down about 40%, keep a little intensity)</p>
-    <p class="km-line">Est. running ~19 km incl. race (~12 km excl. race)</p>
-    <p class="week-note">Running about 40% below peak. Race week: Monday full rest, no hill sprints, nothing new, no club main set on Thursday. Pre-race rule: Friday fully OFF, Saturday 15 min shakeout plus 3 to 4 strides. S&amp;C: Wednesday mobility and activation only, no Friday S&amp;C.</p>
-    <div class="bar" aria-hidden="true"><span></span></div>
-    <p class="week-count"></p>
-    <p class="week-complete" hidden>WEEK COMPLETE</p>
-  </header>
-  <article class="day day-rest" id="d-2026-11-30" data-date="2026-11-30" data-label="Monday 30 Nov" data-effort="Rest">
-  <header class="day-head">
-    <div>
-      <h3>Monday <span>30 Nov</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0 (optional 20 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-11-30" aria-pressed="false" aria-label="Mark Monday 30 Nov done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-11-30" aria-label="Log a note for Monday 30 Nov">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Full rest day. Optional only: 20 min cross trainer, very easy (RPE 2 to 3). Default is nothing. No S&amp;C, no running.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Home</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Monday is her weekly rest day. Race week: keep everything relaxed.</p></div>
-</article>
-<article class="day day-hard" id="d-2026-12-01" data-date="2026-12-01" data-label="Tuesday 1 Dec" data-effort="Hard" data-verdict="Club: TAPER DOWN">
-  <header class="day-head">
-    <div>
-      <h3>Tuesday <span>1 Dec</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>~6 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-12-01" aria-pressed="false" aria-label="Mark Tuesday 1 Dec done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-12-01" aria-label="Log a note for Tuesday 1 Dec">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-hard">Hard</span><span class="badge badge-taper">Club: TAPER DOWN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Belgooly short session at 6:45pm. Warm-up: standard (10 min easy jog, drills, 3 x 80m strides). Main set: 2 x (3 x 400m at 3k-to-XC race pace). Cool-down: 5 to 8 min easy jog. Rule for Glenn's set: do only this set whatever he has; no hills.</p></div>
-  <div class="club club-taper"><p class="k">Club session: what to cut or do instead, and why</p><p>Replace Glenn's session with this short sharp set only: 2 x (3 x 400m), cap hard work at 2.4 km, no hills, nothing else. Reason: 5 days out and the final sharpener, so she should finish feeling she could do more.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Belgooly (track or grass)</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>8</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: 3k-to-XC race pace, smooth. Add her 3k and XC times later.</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>60 sec standing or walk recovery between reps; 3 min easy jog between the two sets</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Trainers or spikes (this is the one spike session of the week). Finish fresh, she should feel she could do more.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-12-02" data-date="2026-12-02" data-label="Wednesday 2 Dec" data-effort="Easy">
-  <header class="day-head">
-    <div>
-      <h3>Wednesday <span>2 Dec</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>15 to 20 min (+ optional 20 to 25 min cross trainer)</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-12-02" aria-pressed="false" aria-label="Mark Wednesday 2 Dec done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-12-02" aria-label="Log a note for Wednesday 2 Dec">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-sc">S&amp;C</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Own S&amp;C, mobility and activation only, 15 to 20 min: core activation (dead bugs, side planks, 1 to 2 sets), glute bridges, hip and ankle mobility, band work. No lifting, no calf work, no plyometrics. Optional after: cross trainer, easy, 20 to 25 min continuous, RPE 3.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Own S&amp;C, home; cross trainer at home</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>2 to 3</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation (cross trainer)</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Rest as needed; cross trainer continuous</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>The final S&amp;C of the block. Nothing after today (no Friday S&amp;C). Mobility and activation only, no soreness. Cross trainer is not counted in the running km.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-12-03" data-date="2026-12-03" data-label="Thursday 3 Dec" data-effort="Easy" data-verdict="Club: TAPER DOWN">
-  <header class="day-head">
-    <div>
-      <h3>Thursday <span>3 Dec</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>20 min, ~3.5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-12-03" aria-pressed="false" aria-label="Mark Thursday 3 Dec done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-12-03" aria-label="Log a note for Thursday 3 Dec">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-taper">Club: TAPER DOWN</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Easy run 20 min at RPE 3 (first 10 min is the warm-up), then 4 x 80m strides, relaxed. Finish with 5 min easy jog. Skip Glenn's main set.</p></div>
-  <div class="club club-taper"><p class="k">Club session: what to cut or do instead, and why</p><p>Easy run plus strides only, skip Glenn's main set (she may jog along socially). Reason: 3 days out, the last club session of the block should feel almost too easy.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Soft surface</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 (strides fast but relaxed)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation. Strides about 800 to 1500 feel</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Full walk-back after each stride</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>3 days before the race, so outside the 2-day pre-race window. She can still go along to the club for the social side.</p></div>
-</article>
-<article class="day day-rest" id="d-2026-12-04" data-date="2026-12-04" data-label="Friday 4 Dec" data-effort="Rest">
-  <header class="day-head">
-    <div>
-      <h3>Friday <span>4 Dec</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>0</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-12-04" aria-pressed="false" aria-label="Mark Friday 4 Dec done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-12-04" aria-label="Log a note for Friday 4 Dec">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-rest">Rest</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>OFF. Full rest day, 2 days before the All-Ireland. No running, no S&amp;C, no cross trainer, no mobility session. Normal walking is fine.</p></div>
-  
-  
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Niall's rule: in the 2 days before a race, one day fully off and the other a shakeout. Friday off, Saturday shakeout. Carb-rich meals, fluids, early night, pack kit and spikes.</p></div>
-</article>
-<article class="day day-easy" id="d-2026-12-05" data-date="2026-12-05" data-label="Saturday 5 Dec" data-effort="Easy" data-verdict="Club: SKIP">
-  <header class="day-head">
-    <div>
-      <h3>Saturday <span>5 Dec</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>15 min, ~2.5 km</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-12-05" aria-pressed="false" aria-label="Mark Saturday 5 Dec done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-12-05" aria-label="Log a note for Saturday 5 Dec">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-easy">Easy</span><span class="badge badge-skip">Club: SKIP</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>Pre-race shakeout: 15 min very easy jog (RPE 3), then drills 1 x 20m each (A-skips, high knees, butt kicks), then 3 to 4 x 80m strides. Strides in spikes only to check they feel right. Walk the course if possible.</p></div>
-  <div class="club club-skip"><p class="k">Club session: what to cut or do instead, and why</p><p>Skip the club session and do this 15 min shakeout instead (she can say hello at the club). Reason: the day before the All-Ireland.</p></div>
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Grass or the course</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>3 (strides relaxed)</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>By feel: full conversation</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>Full walk-back after each stride</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Keep it short. Nothing new.</p></div>
-</article>
-<article class="day day-race" id="d-2026-12-06" data-date="2026-12-06" data-label="Sunday 6 Dec" data-effort="Race">
-  <header class="day-head">
-    <div>
-      <h3>Sunday <span>6 Dec</span></h3>
-      <p class="duration"><span class="k">Duration or km</span>4 to 5 km race, ~7 km with warm up and cool down</p>
-    </div>
-    <div class="day-actions">
-      <button type="button" class="done-btn" data-date="2026-12-06" aria-pressed="false" aria-label="Mark Sunday 6 Dec done">Done</button>
-      <button type="button" class="log-btn" data-date="2026-12-06" aria-label="Log a note for Sunday 6 Dec">Log</button>
-    </div>
-  </header>
-  <div class="badges"><span class="badge today-tag" hidden>Today</span><span class="badge badge-race">Race</span></div>
-  <div class="your-note" hidden>
-    <div class="your-note-top"><span class="badge badge-note">Your note</span><button type="button" class="note-clear">Clear</button></div>
-    <p class="your-note-text"></p>
-    <p class="your-note-time"></p>
-  </div>
-  <div class="session"><p>All-Ireland Cross Country Championships. Race-day warm-up (finish about 10 min before the start): 15 min easy jog (RPE 3 to 4), drills 2 x 20m each (A-skips, B-skips, high knees, butt kicks), then 4 x 80m strides building to race pace. Race: 4 to 5 km, even first km, strong middle, push the last 500m. Cool-down: 10 min easy jog and stretches.</p></div>
-  
-  <dl class="meta"><div class=""><dt class="k">Surface / where</dt><dd>Race course</dd></div><div class=""><dt class="k">Effort (RPE /10)</dt><dd>8</dd></div><div class="wide"><dt class="k">Pace guide</dt><dd>XC race effort, controlled start</dd></div><div class="wide"><dt class="k">Recovery</dt><dd>n/a. Walk and keep warm between the warm-up and the start</dd></div></dl>
-  <div class="calf"><p class="k">Notes (calf / back cautions)</p><p>Main peak target. Spikes for the race only.</p></div>
-</article>
-</section>
-  </main>
-  <section id="guide" hidden>
-    <div class="guide-wrap">
-  <p class="lede">All-Ireland build: Mon 2 Nov to Sun 6 Dec 2026 (main peak target: All-Ireland, Sun 6 Dec)</p>
-  <p class="read-how">Follow the session on the day, and that week's note when it is more specific. The rest of this guide is the general pattern from the plan.</p>
-  <nav class="toc" aria-label="Guide">
-    <a href="#g-weeks">Week by week</a>
-    <a href="#g-structure">Weekly structure</a>
-    <a href="#g-km">Weekly km</a>
-    <a href="#g-prerace">Pre-race rule</a>
-    <a href="#g-effort">Effort guide</a>
-    <a href="#g-sc">S&amp;C</a>
-    <a href="#g-pain">Pain</a>
-    <a href="#g-sleep">Sleep and fuelling</a>
-    <a href="#g-club">Club sessions</a>
-    <a href="#g-trim">Trimming Glenn's sets</a>
-    <a href="#g-why">Why this plan</a>
-  </nav>
-
-  <h2 id="g-weeks">Week by week</h2>
-  <article class="week-blurb" data-week-index="0">
-  <h3>Week 1 · 2 to 8 Nov</h3>
-  <p class="phase">Race week (Cork County B, Sat 7 Nov)</p>
-  <p class="km-line">Est. running ~15 km incl. race (~19 km if Sunday is the optional easy jog)</p>
-  <p>CONFIRMED: Cork County B U17 is Saturday 7 Nov. Monday is a full rest day (the day after Sunday's race). Tuesday club session is cut to about half the reps. Pre-race rule: of the 2 days before the race, Thursday 5 Nov is fully OFF (club session skipped) and Friday 6 Nov is a 15 min shakeout plus strides. Wednesday is the only S&amp;C (light, no legs, can be skipped); no Friday S&amp;C (race week). No hill sprints. If she is not entering Cork B: Thursday becomes the light club session (strides only), Friday an easy 20 min jog, and Saturday an easy long run of about 50 min (~8 km, RPE 3 to 4) on a soft surface.</p>
-</article><article class="week-blurb" data-week-index="1">
-  <h3>Week 2 · 9 to 15 Nov</h3>
-  <p class="phase">Build</p>
-  <p class="km-line">Est. running ~29 km (Glenn's Week 16 plan: 47 km; about 24 km if Thursday is the cross trainer)</p>
-  <p>Back to about the Week 14 level, not above it. Glenn's actual Week 16 sets are now in (posted Tue 10 Nov). Monday is a full rest day. Two hard sessions only: Tuesday's Belgooly progression run, and Saturday's Cork Athletics juvenile squad training (hard day 2). Thursday's Belgooly club session (4 x 1km) is SKIP: 25 to 30 min easy on grass or the cross trainer, plus 4 x 80m relaxed strides if she is fresh. Saturday's Belgooly session (3 x 5 x 400m LT) stays SKIP. Sunday easy 35 to 45 min (not 50 min, because it follows a hard Saturday). S&amp;C: Wednesday light, Friday light (because Saturday is hard). MUNSTER B CONTINGENCY (UNCONFIRMED; Sun 15 Nov, Co Clare; not assumed, as Glenn's entry list on Mon 9 Nov didn't include her): if she is racing, Thursday 12 Nov stays this easy day, Friday 13 Nov is fully OFF (no S&amp;C this week apart from Wednesday's light session), Saturday 14 Nov is a 15 min shakeout plus 4 x 60m strides instead of the Cork squad session, and Sunday is the race instead of the easy run.</p>
-</article><article class="week-blurb" data-week-index="2">
-  <h3>Week 3 · 16 to 22 Nov</h3>
-  <p class="phase">Peak load (max about 10% up on Week 2)</p>
-  <p class="km-line">Est. running ~33 km</p>
-  <p>The biggest week of the block, with two hard sessions only (Tuesday and Thursday). Monday is a full rest day. If anything feels sore, cut it back rather than push on. No 45 sec hill reps (calf risk). S&amp;C: Wednesday light, Friday main (the last moderate S&amp;C of the block).</p>
-</article><article class="week-blurb" data-week-index="3">
-  <h3>Week 4 · 23 to 29 Nov</h3>
-  <p class="phase">Sharpen (volume down about 20%)</p>
-  <p class="km-line">Est. running ~26 km</p>
-  <p>Running about 20% below peak (~26 km vs ~33 km). Monday is a full rest day. Tuesday trimmed to about 2/3 of Glenn's reps, no hill sprints. Thursday short race-pace reps (5 x 300m only). Saturday easy or cross trainer, no club session. S&amp;C: Wednesday light, Friday light core and mobility only (the last moderate S&amp;C was Fri 20 Nov, 16 days out).</p>
-</article><article class="week-blurb" data-week-index="4">
-  <h3>Week 5 · 30 Nov to 6 Dec</h3>
-  <p class="phase">Taper (volume down about 40%, keep a little intensity)</p>
-  <p class="km-line">Est. running ~19 km incl. race (~12 km excl. race)</p>
-  <p>Running about 40% below peak. Race week: Monday full rest, no hill sprints, nothing new, no club main set on Thursday. Pre-race rule: Friday fully OFF, Saturday 15 min shakeout plus 3 to 4 strides. S&amp;C: Wednesday mobility and activation only, no Friday S&amp;C.</p>
-</article>
-
-  <h2 id="g-structure">Weekly structure</h2>
-  <p>Monday: full rest (optional 20 to 30 min cross trainer at most). Tuesday: Belgooly, hard day 1. Wednesday: LIGHT S&amp;C (core, upper body, hips, mobility; no heavy calf raises or plyos) plus an optional short cross trainer. Thursday: Belgooly, hard day 2 (easy in taper weeks). Friday: MAIN S&amp;C in Weeks 2 and 3 (light in Week 4, none in race weeks). Saturday: easy run or cross trainer instead of the club hard session. Sunday: long easy run. Race weeks: the day that is 2 days before the race (Thu 5 Nov, Fri 4 Dec) is fully OFF and the day before the race is a 15 min shakeout.</p>
-
-  <h2 id="g-km">Weekly running km</h2>
-  <p>About 15 / 30 / 33 / 26 / 19 km (Weeks 1 to 5; Week 1 is about 19 if Sunday is the optional easy jog). Week 1 is lower than before (was about 19) because Thursday is now fully off before Cork B and Tuesday is cut to half. Monday was never a run day, so the other weeks are unchanged. If she does the cross trainer on a Saturday instead of the easy run, subtract about 5.5 to 6.5 km in Weeks 2 to 4.</p>
-  <h3>Weekly running km (estimates)</h3>
-  <p>Week 1 ~15 (incl. race; ~19 with the optional Sunday jog), Week 2 ~30, Week 3 ~33, Week 4 ~26 (about 20% below peak), Week 5 ~19 (incl. race, ~12 without; about 40% below peak). Week 1 is lower than the old ~19 because Thursday is fully off before Cork B (confirmed Sat 7 Nov) and Tuesday is cut to half. If she does the cross trainer on Saturday instead of the easy run, subtract about 5.5 km (Week 2), 6.5 km (Week 3) and 6.5 km (Week 4). Easy pace assumed at about 6 min/km for the km estimates only. Cross trainer minutes are not counted.</p>
-  <p>Each week on the schedule shows that week's own estimate.</p>
-
-  <h2 id="g-prerace">Pre-race rule</h2>
-  <p>Niall's rule: in the 2 days before a race, one day is fully OFF and the other is a shakeout. Cork B U17 (CONFIRMED Sat 7 Nov): Thu 5 Nov OFF, Fri 6 Nov 15 min shakeout plus 4 x 60m strides, Wed 4 Nov the only S&amp;C (light, no legs), no Friday S&amp;C. All-Ireland (Sun 6 Dec): Fri 4 Dec OFF, Sat 5 Dec 15 min shakeout plus 3 to 4 strides, Wed 2 Dec mobility only, no Friday S&amp;C.</p>
-
-  <h2 id="g-effort">Effort guide (by feel, no paces invented)</h2>
-  <article class="zone"><h3>Easy</h3><p>RPE 3 to 4. Full conversation. Cross trainer equivalent: same RPE 3 to 4, resistance moderate, steady smooth cadence, she should be able to chat the whole time.</p></article><article class="zone"><h3>Steady</h3><p>RPE 5. Short sentences only.</p></article><article class="zone"><h3>Threshold / LT</h3><p>RPE 6 to 7. 'Comfortably hard', a few words only. Roughly 10k-to-half-marathon race effort for a 14-year-old, about the pace she could hold for 20 to 25 min.</p></article><article class="zone"><h3>XC race pace</h3><p>RPE 8. Her current 4 to 5 km race effort.</p></article><article class="zone"><h3>3k pace</h3><p>RPE 8 to 9.</p></article><article class="zone"><h3>1500 pace</h3><p>RPE 9.</p></article><article class="zone"><h3>Strides</h3><p>Fast but relaxed, about 800 to 1500 pace, not sprinting. 80m (about 15 sec), full walk-back recovery.</p></article><article class="zone"><h3>Hill sprints</h3><p>8 to 10 sec on a moderate (not steep) grass hill, full walk-down recovery. Weeks 2 and 3 only, 4 to 6 reps, skip them if the calf is tight. None in Weeks 1, 4 and 5.</p></article><article class="zone"><h3>Standard warm-up</h3><p>10 to 12 min easy jog (RPE 3 to 4), then drills 2 x 20m each: A-skips, B-skips, high knees, butt kicks, then 3 x 80m strides.</p></article><article class="zone"><h3>Standard cool-down</h3><p>5 to 8 min easy jog (RPE 3), then calf, hip and hamstring stretches.</p></article>
-  <p>Placeholder: Add her current 1500/3k/XC times and I'll convert these to min/km paces. Until then the 'Pace guide' column is by feel.</p>
-
-  <h2 id="g-sc">S&amp;C</h2>
-  <p>Do the S&amp;C written on that day. This is the general pattern, including the cautions.</p>
-  <p>Two S&amp;C sessions a week, on Wednesday and Friday (her actual days). Monday is a full rest day. Wednesday is light (core, upper body, hips, mobility; no heavy calf raises, no plyometrics) because Thursday is a hard club session; Friday is the main session in the build weeks. Week 1: Wednesday light only. Weeks 2 and 3: Wednesday light, Friday main (last moderate S&amp;C Fri 20 Nov). Week 4: Wednesday light, Friday light core and mobility only. Week 5: Wednesday mobility only, no Friday S&amp;C. If the Saturday club session is swapped in for Thursday, S&amp;C stays Wednesday and Friday but Friday becomes light and Wednesday takes the main session. Cautions: no calf raises to failure (stop about 3 reps short), no high-volume jumping or plyometrics, no heavy deadlifts or loaded spinal flexion, nothing unfamiliar, and nothing that leaves her sore for the next run. Avoid heavy leg work in the 48 hours before a race.</p>
-
-  <h2 id="g-pain">Pain</h2>
-  <p>Any calf or back pain more than mild: swap the run for the cross trainer and tell Niall straight away. If it lasts more than a couple of days, get it looked at by her physio. Never make up missed km or sessions.</p>
-
-  <h2 id="g-sleep">Sleep and fuelling</h2>
-  <p>Aim for 9 hours of sleep. Eat carbs at every meal, add protein after sessions, drink plenty of water, and don't skip breakfast before sessions or races.</p>
-
-  <h2 id="g-club">Club sessions</h2>
-  <p>Belgooly runs Tuesday, Thursday and Saturday. Column K labels every club session: DO AS WRITTEN, TAPER DOWN (what to cut is in column L) or SKIP (replacement in column L). Any club session within 2 days of a race is SKIP. Worth letting Glenn know about the modified sessions so everyone is on the same page. The 'Trimming Glenn's sets' rule at the top covers weeks where his set is different from the default.</p>
-  <p>On this page, column L is the club note on that day. DO AS WRITTEN means do the session as given. TAPER DOWN means do it, but cut exactly what that note says. SKIP means do not do the club session; do the replacement in that note.</p>
-  <ul class="verdict-index"><li><span class="badge badge-do">DO AS WRITTEN</span> <span>Tue 10 Nov, Tue 17 Nov, Thu 19 Nov</span></li><li><span class="badge badge-taper">TAPER DOWN</span> <span>Tue 3 Nov, Tue 24 Nov, Thu 26 Nov, Tue 1 Dec, Thu 3 Dec</span></li><li><span class="badge badge-skip">SKIP</span> <span>Thu 5 Nov, Sat 7 Nov (racing), Thu 12 Nov, Sat 14 Nov, Sat 21 Nov, Sat 28 Nov, Sat 5 Dec</span></li></ul>
-
-  <h2 id="g-trim">Trimming Glenn's sets</h2>
-  <p>Glenn's actual set that week isn't known in advance, so each Belgooly row gives a default set. If his set is different, trim it like this:</p>
-  <ol><li>count his hard work, then do the share stated in the row (Week 1 Tuesday about 75% of his reps, Week 4 Tuesday about 2/3 of his reps, always rounded down);</li><li>cap total hard work at the figure in the row;</li><li>take the longest recovery he gives, add 15 to 30 sec if needed, never shorten it;</li><li>never add reps;</li><li>hill sprints only in Weeks 2 and 3 (4 to 6 reps);</li><li>if he has threshold 800s with 30 sec recovery, do at most 4 reps with 45 to 60 sec jog;</li><li>trainers, not spikes;</li><li>Saturday club sessions: SKIP in Weeks 2 to 4, use the Saturday alternative in the row (unless she swaps it for Thursday);</li><li>any club session within 2 days of a race is SKIP, and every club row has its verdict in column K and the reason in column L.</li></ol>
-
-  <h2 id="g-why">Why this plan</h2>
-  <p>Where a week note differs from this general pattern, follow the week note and the day.</p>
-  <p>Recommendation: Belgooly runs Tue, Thu and Sat, but she only does two hard club sessions a week. Keep Tuesday (6:45pm) and Thursday, replace the Saturday club session with an easy run or cross trainer day in Weeks 2 to 4, and keep Thursday light in Weeks 1, 4 and 5. Monday is a full rest day. S&amp;C is Wednesday (light) and Friday (main in the build weeks). In the 2 days before a race, one day is fully OFF and the other is a shakeout. Every Belgooly session row has a verdict in column K (DO AS WRITTEN, TAPER DOWN or SKIP) and the reason in column L. No hill sprints in a race week or the week before the All-Ireland. Spikes only for races and at most one session a week. Every session has an exact warm-up, main set, effort (RPE), recovery and cool-down. Effort is by feel until her current times are added.</p>
-  <h3>2 hard club sessions, not 3</h3>
-  <p>Belgooly runs Tue, Thu and Sat. In the build weeks (9 to 22 Nov) she does only the Tuesday and Thursday hard sessions and replaces Saturday with an easy 30 to 40 min run (RPE 3 to 4, plus 4 x 80m strides) or a 35 to 40 min cross trainer session. Reason: her calf and back history, and Belgooly's own Week 12 had 3 hard days in 5, which stacks too much load.</p>
-  <h3>Swap option</h3>
-  <p>If she prefers the Saturday club session, swap it for Thursday: Tuesday and Saturday hard, Thursday easy (same easy options as the Saturday alternative). Always keep 2 or more days between hard days where possible (Tue to Sat is 4 days, Sat to Tue is 3). S&amp;C stays Wednesday and Friday, but Friday becomes light (the day before a hard Saturday) and Wednesday takes the main moderate session, because Thursday is easy. Calf raises still stop 3 reps short of failure.</p>
-  <h3>Deeper taper</h3>
-  <p>Belgooly's race weeks trimmed volume by about 10% and kept both hard sessions. Ours cuts running by about 20% in Week 4 (no Saturday club session, trimmed Tuesday, short reps on Thursday) and about 40% in Week 5 (one short sharp session, easy Thursday), so she arrives at the All-Ireland fresh. Pre-race rule (Niall's): in the 2 days before a race, one day fully OFF and the other a shakeout. Cork B: Thursday 5 Nov OFF, Friday 6 Nov shakeout. All-Ireland: Friday 4 Dec OFF, Saturday 5 Dec 15 min shakeout plus 3 to 4 strides. Any club session within 2 days of a race is SKIP.</p>
-  <h3>S&amp;C through the block</h3>
-  <p>Wednesday and Friday, with Monday a full rest day. Wednesday is LIGHT (core, upper body, hips, mobility, no heavy calf raises, no plyometrics) because Thursday is a hard club session; any easy aerobic work that day goes on the cross trainer, short (15 to 25 min). Friday is the MAIN session in the build weeks (moderate, calf raises 2 x 10 to 12 stopping about 3 reps short of failure, no plyometrics), the day after Thursday's hard session and before an easy Saturday. Week 1 (race week): Wednesday light only, no Friday S&amp;C. Weeks 2 and 3: Wednesday light, Friday main; the last moderate S&amp;C is Fri 20 Nov, 16 days before the All-Ireland. Week 4: Wednesday light, Friday light core and mobility only. Week 5 (race week): Wednesday mobility and activation only, no Friday S&amp;C. No calf raises to failure and no high-volume plyometrics. If the Saturday club session is swapped in for Thursday, S&amp;C stays Wednesday and Friday but Friday becomes light and Wednesday takes the main session.</p>
-</div>
-  </section>
-  <footer class="footer">
-    <p>All-Ireland plan, Mon 2 Nov to Sun 6 Dec 2026. Done ticks and notes stay on this phone.</p>
-    <p>
-      <button type="button" id="openGuide">Plan guide</button>
-      <button type="button" id="openLog">Notes log</button>
-      <button type="button" id="resetAll">Reset all</button>
-    </p>
-  </footer>
-
-  <div class="modal-overlay" id="noteModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="noteTitle">
-      <header>
-        <h2 id="noteTitle">Note</h2>
-        <p class="sub" id="noteSub"></p>
-      </header>
-      <div class="body">
-        <label class="sr-only" for="noteText">Your note</label>
-        <textarea id="noteText" placeholder="What you did. The plan stays on the day."></textarea>
-        <p class="hint">Leave this blank and press Cancel to keep the plan as it is. Clear removes a note you already saved.</p>
-      </div>
-      <footer>
-        <button type="button" class="btn" id="noteCancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="noteSave">Save</button>
-      </footer>
-    </div>
-  </div>
-  <div class="modal-overlay" id="logModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logTitle">
-      <header>
-        <h2 id="logTitle">Notes log</h2>
-        <p class="sub">Notes saved on this phone</p>
-      </header>
-      <div class="body" id="logList"></div>
-      <footer>
-        <button type="button" class="btn" id="logClose">Close</button>
-      </footer>
-    </div>
-  </div>
+  <main id="gate" class="gate"></main>
+  <div id="app" hidden></div>
   <script>
+const TOKEN_KEY = 'eabha-session';
+const SITE = 'https://running-schedule-puce.vercel.app';
+const gate = document.getElementById('gate');
+const app = document.getElementById('app');
+let who = 'eabha';
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function savedToken() {
+  const local = localStorage.getItem(TOKEN_KEY);
+  if (local) return local;
+  const older = sessionStorage.getItem(TOKEN_KEY);
+  if (!older) return '';
+  localStorage.setItem(TOKEN_KEY, older);
+  sessionStorage.removeItem(TOKEN_KEY);
+  return older;
+}
+function storeToken(value) {
+  if (value) localStorage.setItem(TOKEN_KEY, value);
+  else localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+}
+function showNotice() {
+  app.hidden = true;
+  app.innerHTML = '';
+  gate.hidden = false;
+  gate.innerHTML = '<div class="gate-card"><h1>Sign in</h1><p>This copy has no sign-in. Open <a href="' + SITE + '">the training site</a>.</p></div>';
+}
+function showPasscode(message) {
+  app.hidden = true;
+  app.innerHTML = '';
+  gate.hidden = false;
+  document.title = 'Sign in';
+  gate.innerHTML =
+    '<form class="gate-card" id="gateForm">' +
+    '<h1>Sign in</h1>' +
+    '<p>Enter a passcode to open the training pages.</p>' +
+    '<div class="gate-choices">' +
+    '<button type="button" data-who="eabha" aria-pressed="true">Eabha</button>' +
+    '<button type="button" data-who="niall" aria-pressed="false">Niall</button>' +
+    '</div>' +
+    '<label for="gatePin">Passcode</label>' +
+    '<input id="gatePin" type="password" inputmode="numeric" autocomplete="current-password">' +
+    (message ? '<p class="gate-error">' + esc(message) + '</p>' : '') +
+    '<button class="unlock" type="submit">Unlock</button>' +
+    '</form>';
+  gate.querySelectorAll('[data-who]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      who = btn.dataset.who;
+      gate.querySelectorAll('[data-who]').forEach(other => {
+        other.setAttribute('aria-pressed', other === btn ? 'true' : 'false');
+      });
+    });
+  });
+  document.getElementById('gateForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const pin = document.getElementById('gatePin').value;
+    try {
+      const res = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: who, pin }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not sign in.');
+      storeToken(data.token);
+      document.getElementById('gatePin').value = '';
+      await openSchedule(data.token);
+    } catch (error) {
+      showPasscode(error.message);
+    }
+  });
+}
+function addSignOut() {
+  const nav = document.querySelector('.site-tabs');
+  if (!nav || document.getElementById('signOut')) return;
+  const btn = document.createElement('button');
+  btn.id = 'signOut';
+  btn.type = 'button';
+  btn.className = 'sign-out';
+  btn.textContent = 'Sign out';
+  btn.addEventListener('click', () => {
+    storeToken('');
+    location.reload();
+  });
+  nav.append(btn);
+}
+async function openSchedule(token) {
+  const res = await fetch('/api/schedule', { headers: { Authorization: 'Bearer ' + token } });
+  if (res.status === 401) {
+    storeToken('');
+    showPasscode('Sign in again.');
+    return;
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Could not open the schedule.');
+  gate.hidden = true;
+  gate.innerHTML = '';
+  app.hidden = false;
+  app.innerHTML = data.html;
+  document.title = "Eabha's Training Schedule";
+  addSignOut();
+  window.eabhaSignedOut = () => {
+    storeToken('');
+    location.reload();
+  };
+  window.startSchedule();
+  if (window.startLog) window.startLog();
+}
+async function boot() {
+  const saved = savedToken();
+  let res;
+  try {
+    res = await fetch('/api/session', { headers: saved ? { Authorization: 'Bearer ' + saved } : {} });
+  } catch {
+    showNotice();
+    return;
+  }
+  if (res.status === 404) {
+    showNotice();
+    return;
+  }
+  if (!res.ok) {
+    showPasscode('Could not check the sign-in. Try again.');
+    return;
+  }
+  const data = await res.json().catch(() => ({}));
+  if (data.logging !== true) {
+    showNotice();
+    return;
+  }
+  if (!data.role) {
+    showPasscode('');
+    return;
+  }
+  try {
+    await openSchedule(saved);
+  } catch (error) {
+    showPasscode(error.message);
+  }
+}
+boot();
+</script>
+  <script>
+window.startSchedule = function () {
+
     const cvs = document.getElementById('game');
     const ctx = cvs.getContext('2d');
     let gW, gH;
@@ -1749,18 +933,18 @@ function refreshProgress() {
 }
 
 function countdownText() {
-  const marks = [
-    { iso: '2026-11-07', name: 'Cork County B' },
-    { iso: '2026-12-06', name: 'All-Ireland' }
-  ];
+  const marks = [...document.querySelectorAll('.day[data-effort="Race"]')].map(day => {
+    const session = day.querySelector('.session p');
+    const name = session ? session.textContent.split('.')[0] : day.dataset.label;
+    return { iso: day.dataset.date, name, when: day.dataset.label };
+  });
   const el = document.getElementById('countdown');
   const next = marks.map(m => ({ ...m, days: daysUntil(m.iso) })).find(m => m.days >= 0);
   if (!next) { el.hidden = true; return; }
-  const when = next.iso === '2026-11-07' ? 'Sat 7 Nov' : 'Sun 6 Dec';
   el.hidden = false;
-  if (next.days === 0) el.textContent = next.name + ' is today · ' + when;
-  else if (next.days === 1) el.textContent = next.name + ' is tomorrow · ' + when;
-  else el.textContent = next.name + ' in ' + next.days + ' days · ' + when;
+  if (next.days === 0) el.textContent = next.name + ' is today · ' + next.when;
+  else if (next.days === 1) el.textContent = next.name + ' is tomorrow · ' + next.when;
+  else el.textContent = next.name + ' in ' + next.days + ' days · ' + next.when;
 }
 
 function syncStickyPad() {
@@ -1833,7 +1017,8 @@ function openGuide() {
 
 function goToday(behavior) {
   const i = weekIndexOfToday();
-  if (i < 0) { showWeek(daysUntil('2026-11-02') > 0 ? 0 : weeks.length - 1, 'top', behavior || 'auto'); return; }
+  const firstDay = document.querySelector('.day');
+  if (i < 0) { showWeek(firstDay && daysUntil(firstDay.dataset.date) > 0 ? 0 : weeks.length - 1, 'top', behavior || 'auto'); return; }
   showWeek(i, 'today', behavior || 'auto');
 }
 
@@ -2052,7 +1237,8 @@ function compactSchedule() {
   if (!document.querySelector('.week-fold[open]')) {
     const folds = [...document.querySelectorAll('.week-fold')];
     const last = folds[folds.length - 1];
-    (TODAY > '2026-12-06' ? last : folds[0]).open = true;
+    const lastDay = document.querySelector('.week:last-child .day:last-child');
+    (lastDay && TODAY > lastDay.dataset.date ? last : folds[0]).open = true;
   }
   document.querySelectorAll('.day').forEach(setupCompactDay);
   const focusDay = document.querySelector('.day.today')
@@ -2091,6 +1277,8 @@ countdownText();
 compactSchedule();
 goToday('auto');
 
+  
+};
   </script>
   <script src="log.js"></script>
 </body>

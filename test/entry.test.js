@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { loggingReady, pinMatches, readToken, signToken } from '../lib/auth.js';
@@ -55,7 +56,17 @@ test('passcodes and tokens', () => {
   assert.equal(pinMatches('eabha', 'test-niall-pin'), false);
   assert.equal(pinMatches('niall', ''), false);
   const token = signToken('niall');
-  assert.equal(readToken(token).role, 'niall');
+  const payload = readToken(token);
+  assert.equal(payload.role, 'niall');
+  const remaining = payload.exp - Date.now();
+  assert.ok(remaining > 29 * 24 * 60 * 60 * 1000);
+  assert.ok(remaining < 31 * 24 * 60 * 60 * 1000);
+  const oldBody = Buffer.from(JSON.stringify({
+    role: 'niall',
+    exp: Date.now() + 180 * 24 * 60 * 60 * 1000,
+  })).toString('base64url');
+  const oldSig = crypto.createHmac('sha256', 'test-secret').update(oldBody).digest('base64url');
+  assert.equal(readToken(oldBody + '.' + oldSig), null);
   assert.equal(readToken(token.slice(0, -2) + 'aa'), null);
   delete process.env.EABHA_PIN;
   assert.equal(loggingReady(), false);

@@ -1,6 +1,6 @@
 import { bearer, loggingReady, pinMatches, signToken } from '../lib/auth.js';
 import { clientIp, readJson, sameOrigin, send } from '../lib/http.js';
-import { lockedOut, recordFailure } from '../lib/store.js';
+import { decideSignIn, retryMessage, wrongMessage } from '../lib/store.js';
 
 export default async function handler(req, res) {
   if (!sameOrigin(req)) return send(res, 403, { error: 'Blocked.' });
@@ -20,15 +20,17 @@ export default async function handler(req, res) {
   if (!role) return send(res, 400, { error: 'Choose Eabha or Niall.' });
 
   const ip = clientIp(req);
+  let decision;
   try {
-    if (await lockedOut(ip)) return send(res, 429, { error: 'Too many tries. Wait 15 minutes.' });
+    decision = await decideSignIn(ip, () => pinMatches(role, body.pin));
   } catch {
-    return send(res, 503, { error: 'Logging is not set up yet.' });
+    return send(res, 503, { error: 'Sign-in is unavailable right now. Try again shortly.' });
   }
-
-  if (!pinMatches(role, body.pin)) {
-    try { await recordFailure(ip); } catch { /* still reject the passcode */ }
-    return send(res, 401, { error: 'Wrong passcode.' });
+  if (decision.status === 429) {
+    return send(res, 429, { error: retryMessage(decision.retrySeconds), retrySeconds: decision.retrySeconds });
+  }
+  if (decision.status === 401) {
+    return send(res, 401, { error: wrongMessage(decision.remaining), remaining: decision.remaining });
   }
   return send(res, 200, { token: signToken(role), role });
 }
