@@ -178,11 +178,10 @@ body.guide-open .guide-btn { flex: 1; }
 .week-more .week-note { margin-top: 8px; }
 .day { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .day:active { transform: scale(0.985); }
-.day-head { padding-right: 46px; }
 .chevron {
-  position: absolute; top: 12px; right: 8px;
-  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-  pointer-events: none; color: #1E293B;
+  flex: 0 0 44px; width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: #1E293B;
 }
 .chevron svg { display: block; transition: transform 0.15s ease; }
 .day.is-open .chevron svg { transform: rotate(180deg); }
@@ -227,17 +226,18 @@ body.guide-open .guide-btn { flex: 1; }
 .day-moderate { border-left-color: var(--moderate); }
 .day-race { border-left-color: var(--race); background: #FFFBFB; }
 .day.today { box-shadow: 0 0 0 2px #3B82F6, 0 8px 22px rgba(59,130,246,0.14); }
-.day-head { display: flex; justify-content: space-between; gap: 8px; padding: 12px 12px 0; }
+.day-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 8px 0 12px; }
 .day-head > div:first-child { min-width: 0; flex: 1; }
 .day-head h3 { margin: 0; font-size: 1.02rem; }
 .day-head h3 span { font-weight: 600; color: var(--text-muted); }
 .duration { margin: 4px 0 0; font-size: 0.88rem; font-weight: 700; color: var(--primary); line-height: 1.35; }
 .k { display: block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
-.day-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
+.day-actions { display: flex; gap: 8px; padding: 0 12px 12px; }
 .done-btn, .log-btn, .note-clear, .btn {
-  min-height: 36px; border-radius: 999px; padding: 6px 12px;
-  font-size: 0.78rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--card);
+  min-height: 44px; border-radius: 999px; padding: 8px 12px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--card);
 }
+.done-btn, .log-btn { flex: 1; }
 .done-btn[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
 .done-btn[aria-pressed="true"]::before { content: "✓ "; }
 .log-btn { color: var(--primary); }
@@ -1999,12 +1999,14 @@ function setupCompactDay(day) {
     const el = day.querySelector(sel);
     if (el) detail.append(el);
   });
-  headline.after(detail);
+  const actions = day.querySelector('.day-actions');
+  headline.after(actions);
+  actions.after(detail);
   const chevron = document.createElement('span');
   chevron.className = 'chevron';
   chevron.setAttribute('aria-hidden', 'true');
   chevron.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  day.append(chevron);
+  day.querySelector('.day-head').append(chevron);
   day.setAttribute('aria-expanded', 'false');
   function toggleDetail() {
     const open = detail.hidden;
