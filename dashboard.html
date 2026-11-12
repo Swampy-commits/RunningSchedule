@@ -54,6 +54,20 @@
     }
     .site-tabs a[aria-current="page"] { background: #1E293B; color: #fff; border-color: #1E293B; }
     .sign-out { margin-left: auto; background: none; border: none; color: var(--muted); font-weight: 700; cursor: pointer; min-height: 40px; }
+    .strategy p { margin: 0 0 0.7rem; }
+    .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 8px 0; }
+    .phase-btn {
+      min-height: 64px; border: 1px solid var(--line); background: #fff; border-radius: 12px;
+      padding: 8px 4px; text-align: center; font: inherit; font-size: 0.72rem; font-weight: 800;
+      line-height: 1.2; cursor: pointer; color: var(--text);
+    }
+    .phase-btn small { display: block; font-weight: 650; font-size: 0.62rem; color: var(--muted); margin-top: 4px; }
+    .phase-btn[aria-pressed="true"], .phase-btn.is-now { border-color: #1E293B; }
+    .phase-btn[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #1E293B; }
+    .detail { margin: 8px 0; }
+    .detail h3 { margin: 0 0 6px; font-size: 1rem; }
+    .detail ul { margin: 8px 0 0; padding-left: 1.1rem; }
+    .late .big { font-size: 1.6rem; }
   </style>
 </head>
 <body>
