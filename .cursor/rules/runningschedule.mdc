@@ -1,0 +1,24 @@
+---
+description: What RunningSchedule is, where the plan and logs live, and how to change them safely.
+alwaysApply: true
+---
+
+# RunningSchedule
+
+Eabha is a minor (U17 cross-country). This site is her training schedule, plus workout logging and a coach view for her dad, Niall.
+
+- `index.html` is the schedule. `log.js` and `log.css` are the logging UI. `api/` is the Vercel Functions. `lib/` is the shared helpers. Upstash Redis stores the logs.
+- The plan's source of truth is Niall's Google Sheet "Eabha XC Training 2026", tab "All-Ireland plan". It arrives as an uploaded export. Do not fetch the sheet. Copy its wording. Do not invent paces, sessions, or numbers. Other tabs are background, not her schedule. If a day row and the overview disagree, follow the day row.
+- Vercel project `running-schedule` auto-deploys from `main`. GitHub Pages serves `index.html` only: the plan, with no shared logging.
+- Never commit secrets. Passcodes and keys live only in Vercel env vars: `EABHA_PIN`, `NIALL_PIN`, `LOG_SECRET`, and `UPSTASH_*`.
+- Logs are a minor's health data. Keep them behind sign-in. Do not put them on a public page or in the repo.
+- Phone first. It must be readable outdoors, in plain language for a teenager. Logging should take seconds.
+- Run `npm test` for code changes and keep tests light. No screen recordings or long walkthroughs unless asked.
+
+## Prototype first
+
+- For any new feature or visible change, first build a clickable prototype: front end only, fake sample data, no database, auth, or backend changes.
+- Open it as a draft PR titled "Prototype: ..." with a preview link Niall can open on his phone, plus 3-5 bullets on what it does and the choices made.
+- Stop and wait for Niall's approval or feedback. Don't write production code until he says "approved".
+- After approval, build the real version on the same PR.
+- Skip the prototype only for small fixes, schedule/data updates, or when Niall says "no prototype".
