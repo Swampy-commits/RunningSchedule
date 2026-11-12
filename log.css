@@ -1,0 +1,79 @@
+.log-strip {
+  margin: 8px 12px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-body);
+}
+.log-strip.pain { color: #9F1239; }
+.sign-choices, .choice-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice, .rpe-btn {
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.choice[aria-pressed="true"], .rpe-btn[aria-pressed="true"] {
+  background: #EDE9FE;
+  border-color: #7C3AED;
+  color: #5B21B6;
+}
+.choice.pain-on[aria-pressed="true"] {
+  background: #FFE4E6;
+  border-color: #9F1239;
+  color: #9F1239;
+}
+.rpe-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.rpe-btn { min-width: 36px; padding: 8px 0; }
+.field { margin-top: 12px; }
+.field label, .field .k { margin-bottom: 6px; }
+.field input[type="text"], .field input[type="password"], .field input[type="number"] {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+.form-error { color: #9F1239; font-size: 0.85rem; font-weight: 700; margin: 8px 0 0; }
+.coach-wrap { max-width: 40rem; margin: 0 auto; padding: 12px 12px 48px; }
+.coach-card, .pain-banner {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.pain-banner { background: #FFF1F2; border: 1px solid #FECDD3; }
+.pain-banner h2, .coach-card h2 { margin: 0 0 8px; font-size: 1.05rem; }
+.coach-card h3 { margin: 0; font-size: 1rem; }
+.coach-meta { color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 0; }
+.coach-day { border-top: 1px solid var(--border); padding: 10px 0; }
+.coach-day:first-of-type { border-top: none; }
+.coach-day .who { font-weight: 800; }
+.tag-pain {
+  display: inline-block;
+  background: #FFE4E6;
+  color: #9F1239;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 5px;
+  padding: 2px 6px;
+  margin-left: 6px;
+}
+.rpe-trend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.rpe-trend span {
+  background: #F8FAFC;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  #workoutModal.open, #signModal.open { align-items: flex-end; padding: 0; }
+  #workoutModal .modal, #signModal .modal { border-radius: 16px 16px 0 0; max-height: 92vh; }
+}

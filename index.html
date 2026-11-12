@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Eabha's Training Schedule</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="log.css">
   <style>
 :root {
   --primary: #5B21B6;
@@ -1636,6 +1637,7 @@ function applyState() {
   const blurb = document.querySelector('#guide [data-week-index="' + weekIndexOfToday() + '"]');
   document.querySelectorAll('#guide .week-blurb').forEach(el => el.classList.remove('is-this-week'));
   if (blurb) blurb.classList.add('is-this-week');
+  if (window.eabhaAfterRender) window.eabhaAfterRender();
 }
 
 function weekIndexOfToday() {
@@ -1808,12 +1810,17 @@ document.body.addEventListener('click', e => {
   const done = e.target.closest('.done-btn');
   if (done) {
     const id = done.dataset.date;
+    if (window.eabhaOnDone && window.eabhaOnDone(id)) return;
     if (state.done[id]) delete state.done[id]; else state.done[id] = true;
     save(); applyState(); refreshProgress();
     return;
   }
   const log = e.target.closest('.log-btn');
-  if (log) { openNoteModal(log.dataset.date); return; }
+  if (log) {
+    if (window.eabhaOnLog && window.eabhaOnLog(log.dataset.date)) return;
+    openNoteModal(log.dataset.date);
+    return;
+  }
   const clear = e.target.closest('.note-clear');
   if (clear) {
     const day = clear.closest('.day');
@@ -1889,6 +1896,7 @@ document.addEventListener('touchend', e => {
   }
 }, { passive: true });
 
+window.eabhaRefresh = refreshProgress;
 window.addEventListener('resize', syncStickyPad);
 load();
 applyState();
@@ -1896,5 +1904,6 @@ countdownText();
 goToday('auto');
 
   </script>
+  <script src="log.js"></script>
 </body>
 </html>
