@@ -10,7 +10,7 @@ Eabha is a minor (U17 cross-country). This site is her training schedule, plus w
 - `index.html` is the schedule. `log.js` and `log.css` are the logging UI. `api/` is the Vercel Functions. `lib/` is the shared helpers. Upstash Redis stores the logs.
 - The plan's source of truth is Niall's Google Sheet "Eabha XC Training 2026", tab "All-Ireland plan". It arrives as an uploaded export. Do not fetch the sheet. Copy its wording. Do not invent paces, sessions, or numbers. Other tabs are background, not her schedule. If a day row and the overview disagree, follow the day row.
 - Vercel project `running-schedule` auto-deploys from `main`. GitHub Pages serves `index.html` only: the plan, with no shared logging.
-- Never commit secrets. Passcodes and keys live only in Vercel env vars: `EABHA_PIN`, `NIALL_PIN`, `LOG_SECRET`, and `UPSTASH_*`.
+- Never commit secrets. Passcodes and keys live only in Vercel env vars: `EABHA_PIN`, `NIALL_PIN`, `LOG_SECRET`, and the Redis pair (`UPSTASH_REDIS_REST_URL`/`TOKEN` or `KV_REST_API_URL`/`TOKEN`).
 - Logs are a minor's health data. Keep them behind sign-in. Do not put them on a public page or in the repo.
 - Phone first. It must be readable outdoors, in plain language for a teenager. Logging should take seconds.
 - Run `npm test` for code changes and keep tests light. No screen recordings or long walkthroughs unless asked.

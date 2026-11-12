@@ -60,3 +60,24 @@ test('passcodes and tokens', () => {
   delete process.env.EABHA_PIN;
   assert.equal(loggingReady(), false);
 });
+
+test('logging is ready with the KV Redis env names', () => {
+  const keys = [
+    'EABHA_PIN', 'NIALL_PIN', 'LOG_SECRET',
+    'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN',
+    'KV_REST_API_URL', 'KV_REST_API_TOKEN',
+  ];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  for (const key of keys) delete process.env[key];
+  process.env.EABHA_PIN = 'test-eabha-pin';
+  process.env.NIALL_PIN = 'test-niall-pin';
+  process.env.LOG_SECRET = 'test-secret';
+  assert.equal(loggingReady(), false);
+  process.env.KV_REST_API_URL = 'https://example.upstash.io';
+  process.env.KV_REST_API_TOKEN = 'token';
+  assert.equal(loggingReady(), true);
+  for (const key of keys) {
+    if (previous[key] === undefined) delete process.env[key];
+    else process.env[key] = previous[key];
+  }
+});
