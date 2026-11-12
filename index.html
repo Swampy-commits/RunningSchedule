@@ -131,10 +131,6 @@ body.guide-open .guide-btn { flex: 1; }
 .js .week { display: block; scroll-margin-top: calc(var(--sticky, 120px) + 8px); }
 .js .week.is-on { scroll-margin-top: calc(var(--sticky, 120px) + 8px); }
 
-.proto-note {
-  margin: 0 0 10px; padding: 10px 12px; border-radius: 12px;
-  background: #FEF3C7; color: #78350F; font-size: 0.85rem; font-weight: 700;
-}
 .focus-card {
   background: #fff; border-radius: 16px; padding: 16px;
   margin-bottom: 12px; border: 3px solid #1E293B;
@@ -2025,10 +2021,6 @@ function setupCompactDay(day) {
   };
 }
 function compactSchedule() {
-  const note = document.createElement('p');
-  note.className = 'proto-note';
-  note.textContent = 'Prototype layout. Tap a day or a week to open it.';
-  document.getElementById('schedule').prepend(note);
   document.querySelectorAll('.week').forEach(week => {
     const intro = week.querySelector('.week-intro');
     const fold = document.createElement('details');
@@ -2089,7 +2081,7 @@ function compactSchedule() {
     focusDay.scrollIntoView({ block: 'start', behavior: 'smooth' });
   });
   focus.append(kicker, title, badges, line, open);
-  note.after(focus);
+  document.getElementById('schedule').prepend(focus);
 }
 load();
 applyState();
