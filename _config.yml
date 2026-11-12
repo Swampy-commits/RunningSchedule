@@ -1,0 +1,4 @@
+exclude:
+  - api
+  - test
+  - node_modules

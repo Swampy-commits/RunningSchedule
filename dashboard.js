@@ -27,51 +27,8 @@ function storeToken(value) {
   else localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_KEY);
 }
-const RACE = '2026-12-06';
-const WEEKS = [
-  { id: 1, name: 'Week 1', dates: '2 to 8 Nov', phase: 'Race week (Cork County B, Sat 7 Nov)', planKm: 15 },
-  { id: 2, name: 'Week 2', dates: '9 to 15 Nov', phase: 'Build', planKm: 29 },
-  { id: 3, name: 'Week 3', dates: '16 to 22 Nov', phase: 'Peak load', planKm: 33 },
-  { id: 4, name: 'Week 4', dates: '23 to 29 Nov', phase: 'Sharpen', planKm: 26 },
-  { id: 5, name: 'Week 5', dates: '30 Nov to 6 Dec', phase: 'Taper', planKm: 19 },
-];
-const PLAN = [
-  ['2026-11-02', 'Mon 2 Nov', 'Rest', 1, 'Full rest day'],
-  ['2026-11-03', 'Tue 3 Nov', 'Hard', 1, "Belgooly session at 6:45pm, cut to half of Glenn's fartlek, no hill sprints"],
-  ['2026-11-04', 'Wed 4 Nov', 'Easy', 1, 'Own S&C, light, 20 to 25 min'],
-  ['2026-11-05', 'Thu 5 Nov', 'Rest', 1, 'OFF. Full rest day, 2 days before the race'],
-  ['2026-11-06', 'Fri 6 Nov', 'Easy', 1, 'Pre-race shakeout: 15 min very easy jog'],
-  ['2026-11-07', 'Sat 7 Nov', 'Race', 1, 'Cork County B U17 race, Lyre, Clonakilty'],
-  ['2026-11-08', 'Sun 8 Nov', 'Easy', 1, 'Easy recovery, 20 to 30 min'],
-  ['2026-11-09', 'Mon 9 Nov', 'Rest', 2, 'Full rest day'],
-  ['2026-11-10', 'Tue 10 Nov', 'Hard', 2, "Belgooly session at 6:45pm, Glenn's set as written (hill sprints capped)"],
-  ['2026-11-11', 'Wed 11 Nov', 'Easy', 2, 'Own S&C, light, 20 to 25 min'],
-  ['2026-11-12', 'Thu 12 Nov', 'Easy', 2, 'Skip the Belgooly club session. Easy day: 25 to 30 min'],
-  ['2026-11-13', 'Fri 13 Nov', 'Easy', 2, 'Own S&C, light, 25 to 30 min'],
-  ['2026-11-14', 'Sat 14 Nov', 'Hard', 2, 'Cork Athletics juvenile squad training session, hard day 2'],
-  ['2026-11-15', 'Sun 15 Nov', 'Easy', 2, 'Easy run or cross trainer: 35 to 45 min'],
-  ['2026-11-16', 'Mon 16 Nov', 'Rest', 3, 'Full rest day'],
-  ['2026-11-17', 'Tue 17 Nov', 'Hard', 3, 'Belgooly session in full. Main set: 5 x 1km'],
-  ['2026-11-18', 'Wed 18 Nov', 'Easy', 3, 'Own S&C, light, 20 to 25 min'],
-  ['2026-11-19', 'Thu 19 Nov', 'Hard', 3, 'Main set: 6 x 800m at threshold'],
-  ['2026-11-20', 'Fri 20 Nov', 'Moderate', 3, 'Own S&C, main session, 30 to 40 min'],
-  ['2026-11-21', 'Sat 21 Nov', 'Easy', 3, 'Saturday alternative to the Belgooly club session'],
-  ['2026-11-22', 'Sun 22 Nov', 'Easy', 3, 'Long run, easy: 55 to 60 min'],
-  ['2026-11-23', 'Mon 23 Nov', 'Rest', 4, 'Full rest day'],
-  ['2026-11-24', 'Tue 24 Nov', 'Hard', 4, 'Main set: 4 x 800m at XC race effort'],
-  ['2026-11-25', 'Wed 25 Nov', 'Easy', 4, 'Own S&C, light, 15 to 20 min'],
-  ['2026-11-26', 'Thu 26 Nov', 'Moderate', 4, 'Main set: 5 x 300m at 3k pace feel'],
-  ['2026-11-27', 'Fri 27 Nov', 'Easy', 4, 'Own S&C, light, 15 to 20 min'],
-  ['2026-11-28', 'Sat 28 Nov', 'Easy', 4, 'Easy alternative, no hard running'],
-  ['2026-11-29', 'Sun 29 Nov', 'Easy', 4, 'Easy run 45 min continuous'],
-  ['2026-11-30', 'Mon 30 Nov', 'Rest', 5, 'Full rest day'],
-  ['2026-12-01', 'Tue 1 Dec', 'Hard', 5, 'Main set: 2 x (3 x 400m at 3k-to-XC race pace)'],
-  ['2026-12-02', 'Wed 2 Dec', 'Easy', 5, 'Own S&C, mobility and activation only, 15 to 20 min'],
-  ['2026-12-03', 'Thu 3 Dec', 'Easy', 5, 'Easy run 20 min at RPE 3, then 4 x 80m strides'],
-  ['2026-12-04', 'Fri 4 Dec', 'Rest', 5, 'OFF. Full rest day, 2 days before the All-Ireland'],
-  ['2026-12-05', 'Sat 5 Dec', 'Easy', 5, 'Pre-race shakeout: 15 min very easy jog'],
-  ['2026-12-06', 'Sun 6 Dec', 'Race', 5, 'All-Ireland Cross Country Championships'],
-].map(([date, label, effort, week, title]) => ({ date, label, effort, week, title }));
+let PLAN = [];
+let WEEKS = [];
 
 let who = 'eabha';
 
@@ -159,9 +116,12 @@ function heatMap(logs) {
 
 function render(logs) {
   const today = todayIso();
-  const left = daysBetween(today, RACE);
+  const race = [...PLAN].reverse().find(day => day.effort === 'Race') || null;
+  const raceDate = race ? race.date : today;
+  const left = daysBetween(today, raceDate);
   const recent = last7Summary(logs, PLAN, today);
-  const thisWeek = PLAN.find(day => day.date >= today)?.week || (today > RACE ? 5 : 1);
+  const lastWeek = WEEKS.length ? WEEKS[WEEKS.length - 1].id : 1;
+  const thisWeek = PLAN.find(day => day.date >= today)?.week || (today > raceDate ? lastWeek : 1);
   const weekDates = PLAN.filter(day => day.week === thisWeek).map(day => day.date);
   const weekTally = sessionCounts(logs, weekDates);
   const allTally = sessionCounts(logs, PLAN.map(day => day.date));
@@ -184,7 +144,8 @@ function render(logs) {
   html += '<div class="pair"><article class="card"><p class="k">Streak</p><p class="big">' + streakCount(logs, datesSoFar) + '</p><p class="muted">Days in a row you logged a session.</p></article>';
   html += '<article class="card"><p class="k">This week</p><p class="big">' + weekKm + '</p><p class="muted">Kilometres you logged.</p></article></div>';
 
-  html += '<article class="card"><p class="k">All-Ireland</p><p class="big">' + (left < 0 ? '0' : left) + '</p><p>' + (left === 0 ? 'Race day is today, Sun 6 Dec.' : left > 0 ? 'days until Sun 6 Dec' : 'Sun 6 Dec has passed.') + '</p>';
+  const raceName = race ? race.label : 'race day';
+  html += '<article class="card"><p class="k">' + esc(race ? race.title : 'Race') + '</p><p class="big">' + (left < 0 ? '0' : left) + '</p><p>' + (left === 0 ? 'Race day is today, ' + esc(raceName) + '.' : left > 0 ? 'days until ' + esc(raceName) : esc(raceName) + ' has passed.') + '</p>';
   html += '<p class="k">Your last 7 days</p>';
   if (!anyLog) html += '<p>Nothing logged yet. When you log a session on the plan, it will show up here.</p>';
   else {
@@ -193,7 +154,8 @@ function render(logs) {
   }
   html += '</article>';
 
-  html += '<article class="card"><h2>Plan km and logged km</h2><p class="muted">Light bar is the plan estimate (~15 / 29 / 33 / 26 / 19). Dark bar is the kilometres you logged.</p>' + barChart(weeklyBars(logs, PLAN, WEEKS)) + '</article>';
+  const estimate = WEEKS.map(week => week.planKm).join(' / ');
+  html += '<article class="card"><h2>Plan km and logged km</h2><p class="muted">Light bar is the plan estimate (' + estimate + '). Dark bar is the kilometres you logged.</p>' + barChart(weeklyBars(logs, PLAN, WEEKS)) + '</article>';
 
   html += '<article class="card"><h2>Sessions you logged</h2>';
   html += '<p><strong>This week.</strong> ' + weekTally.done + ' done, ' + weekTally.part + ' partly done, ' + weekTally.skipped + ' skipped, ' + weekTally.swapped + ' swapped.</p>';
@@ -240,7 +202,7 @@ function render(logs) {
   });
   html += '</article>';
   document.getElementById('dash').innerHTML = html;
-  document.getElementById('dash').hidden = false;
+  document.getElementById('signed').hidden = false;
   document.getElementById('gate').hidden = true;
   const signOut = document.getElementById('signOut');
   signOut.hidden = false;
@@ -253,7 +215,7 @@ function render(logs) {
 function showGate(html) {
   document.getElementById('gate').innerHTML = html;
   document.getElementById('gate').hidden = false;
-  document.getElementById('dash').hidden = true;
+  document.getElementById('signed').hidden = true;
   document.getElementById('dash').innerHTML = '';
   const signOut = document.getElementById('signOut');
   if (signOut) signOut.hidden = true;
@@ -302,15 +264,23 @@ function signInForm(message) {
 }
 
 async function loadLogs(token) {
-  const res = await fetch('/api/logs', { headers: { Authorization: 'Bearer ' + token } });
-  if (res.status === 401) {
+  const headers = { Authorization: 'Bearer ' + token };
+  const [logRes, planRes] = await Promise.all([
+    fetch('/api/logs', { headers }),
+    fetch('/api/schedule', { headers }),
+  ]);
+  if (logRes.status === 401 || planRes.status === 401) {
     storeToken('');
     signInForm('Sign in again.');
     return;
   }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Could not load logs.');
-  render(data.logs || {});
+  const logsBody = await logRes.json().catch(() => ({}));
+  const planBody = await planRes.json().catch(() => ({}));
+  if (!logRes.ok) throw new Error(logsBody.error || 'Could not load logs.');
+  if (!planRes.ok) throw new Error(planBody.error || 'Could not load the plan.');
+  PLAN = planBody.plan || [];
+  WEEKS = planBody.weeks || [];
+  render(logsBody.logs || {});
 }
 
 async function boot() {
@@ -319,16 +289,20 @@ async function boot() {
   try {
     res = await fetch('/api/session', { headers: saved ? { Authorization: 'Bearer ' + saved } : {} });
   } catch {
-    showGate('<p class="card">Sign in on the training site to see this page. This copy does not keep logs.</p>');
+    showGate('<p class="card">This copy has no sign-in. Open <a href="https://running-schedule-puce.vercel.app">the training site</a>.</p>');
+    return;
+  }
+  if (res.status === 404) {
+    showGate('<p class="card">This copy has no sign-in. Open <a href="https://running-schedule-puce.vercel.app">the training site</a>.</p>');
     return;
   }
   if (!res.ok) {
-    showGate('<p class="card">Sign in on the training site to see this page. This copy does not keep logs.</p>');
+    showGate('<p class="card">Could not check the sign-in. Try again.</p>');
     return;
   }
   const data = await res.json().catch(() => ({}));
   if (data.logging !== true) {
-    showGate('<p class="card">Logging is not switched on yet, so there is nothing to show here.</p>');
+    showGate('<p class="card">This copy has no sign-in. Open <a href="https://running-schedule-puce.vercel.app">the training site</a>.</p>');
     return;
   }
   if (!data.role) {

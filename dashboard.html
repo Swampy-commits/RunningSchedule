@@ -58,14 +58,16 @@
 </head>
 <body>
   <div class="wrap">
-    <nav class="site-tabs" aria-label="Sections">
-      <a href="index.html">Schedule</a>
-      <a href="dashboard.html" aria-current="page">Dashboard</a>
-      <button type="button" id="signOut" class="sign-out" hidden>Sign out</button>
-    </nav>
-    <h1>Your training</h1>
     <div id="gate"></div>
-    <div id="dash" hidden></div>
+    <div id="signed" hidden>
+      <nav class="site-tabs" aria-label="Sections">
+        <a href="index.html">Schedule</a>
+        <a href="dashboard.html" aria-current="page">Dashboard</a>
+        <button type="button" id="signOut" class="sign-out" hidden>Sign out</button>
+      </nav>
+      <h1>Your training</h1>
+      <div id="dash"></div>
+    </div>
   </div>
   <script type="module" src="dashboard.js"></script>
 </body>

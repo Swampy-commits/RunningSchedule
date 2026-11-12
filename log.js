@@ -427,6 +427,7 @@
     restoreLocalTicks();
     signedInUi();
     if (window.eabhaRefresh) window.eabhaRefresh();
+    if (window.eabhaSignedOut) window.eabhaSignedOut();
   }
 
   async function signIn() {
@@ -473,5 +474,5 @@
     }
   }
 
-  boot();
+  window.startLog = boot;
 })();
