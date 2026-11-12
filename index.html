@@ -128,8 +128,69 @@ body.guide-open .today-jump { display: none; }
 body.guide-open .guide-btn { flex: 1; }
 
 .wrap { max-width: 40rem; margin: 0 auto; padding: 12px 12px 40px; }
-.js .week { display: none; }
-.js .week.is-on { display: block; scroll-margin-top: calc(var(--sticky, 120px) + 8px); }
+.js .week { display: block; scroll-margin-top: calc(var(--sticky, 120px) + 8px); }
+.js .week.is-on { scroll-margin-top: calc(var(--sticky, 120px) + 8px); }
+
+.focus-card {
+  background: #fff; border-radius: 16px; padding: 16px;
+  margin-bottom: 12px; border: 3px solid #1E293B;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  scroll-margin-top: calc(var(--sticky, 120px) + 10px);
+}
+.focus-card h2 { margin: 2px 0 8px; font-size: 1.35rem; line-height: 1.2; }
+.focus-card .headline { margin: 8px 0 0; font-size: 1.2rem; font-weight: 800; line-height: 1.35; }
+.focus-open {
+  margin-top: 12px; min-height: 44px; width: 100%;
+  border: none; border-radius: 999px; background: #1E293B; color: #fff;
+  font-weight: 800; font-size: 0.95rem; cursor: pointer;
+}
+.week-fold { margin-bottom: 10px; }
+.week-summary {
+  display: block; cursor: pointer; background: #fff; border-radius: 14px;
+  padding: 12px 44px 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  position: relative; -webkit-tap-highlight-color: transparent;
+}
+.week-summary::-webkit-details-marker { display: none; }
+.week-summary::after, .week-more summary::after {
+  content: '';
+  position: absolute; right: 16px; top: 22px;
+  width: 10px; height: 10px;
+  border-right: 3px solid #1E293B; border-bottom: 3px solid #1E293B;
+  transform: rotate(45deg);
+}
+.week-fold[open] > .week-summary::after { transform: rotate(225deg); top: 26px; }
+.week-summary:active { background: #F8FAFC; }
+.week-fold[open] > .week-summary { border-radius: 14px 14px 0 0; }
+.week-summary .km-line {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.week-fold > .bar { margin: 8px 14px 0; }
+.week-fold > .week-count { margin: 4px 14px 8px; }
+.week-more {
+  background: #fff; margin: 0 0 8px; border-radius: 0 0 14px 14px; padding: 0 14px 12px;
+}
+.week-more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 800; color: var(--primary);
+  padding: 8px 36px 8px 0; position: relative; list-style: none; min-height: 44px;
+}
+.week-more summary::-webkit-details-marker { display: none; }
+.week-more[open] summary::after { transform: rotate(225deg); top: 18px; }
+.week-more .week-note { margin-top: 8px; }
+.day { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.day:active { transform: scale(0.985); }
+.chevron {
+  flex: 0 0 44px; width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: #1E293B;
+}
+.chevron svg { display: block; transition: transform 0.15s ease; }
+.day.is-open .chevron svg { transform: rotate(180deg); }
+.headline {
+  margin: 0; padding: 4px 12px 12px; font-size: 1.05rem; font-weight: 800; line-height: 1.35;
+}
+.day-detail { padding-bottom: 8px; }
+.day-detail .duration { padding: 0 12px; }
+.day.is-open { box-shadow: 0 0 0 2px #94A3B8, 0 1px 3px rgba(0,0,0,0.06); }
 
 .week-intro {
   background: var(--card); border-radius: 14px; padding: 14px;
@@ -152,8 +213,9 @@ body.guide-open .guide-btn { flex: 1; }
 }
 
 .day {
+  position: relative;
   background: var(--card); border-radius: 14px; margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   border-left: 4px solid var(--border);
   scroll-margin-top: calc(var(--sticky, 120px) + 10px);
   overflow: hidden;
@@ -164,17 +226,18 @@ body.guide-open .guide-btn { flex: 1; }
 .day-moderate { border-left-color: var(--moderate); }
 .day-race { border-left-color: var(--race); background: #FFFBFB; }
 .day.today { box-shadow: 0 0 0 2px #3B82F6, 0 8px 22px rgba(59,130,246,0.14); }
-.day-head { display: flex; justify-content: space-between; gap: 8px; padding: 12px 12px 0; }
+.day-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 8px 0 12px; }
 .day-head > div:first-child { min-width: 0; flex: 1; }
 .day-head h3 { margin: 0; font-size: 1.02rem; }
 .day-head h3 span { font-weight: 600; color: var(--text-muted); }
 .duration { margin: 4px 0 0; font-size: 0.88rem; font-weight: 700; color: var(--primary); line-height: 1.35; }
 .k { display: block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
-.day-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
+.day-actions { display: flex; gap: 8px; padding: 0 12px 12px; }
 .done-btn, .log-btn, .note-clear, .btn {
-  min-height: 36px; border-radius: 999px; padding: 6px 12px;
-  font-size: 0.78rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--card);
+  min-height: 44px; border-radius: 999px; padding: 8px 12px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--card);
 }
+.done-btn, .log-btn { flex: 1; }
 .done-btn[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
 .done-btn[aria-pressed="true"]::before { content: "✓ "; }
 .log-btn { color: var(--primary); }
@@ -1738,14 +1801,18 @@ function showWeek(i, scrollMode, behavior) {
   document.getElementById('guide').hidden = true;
   document.getElementById('schedule').hidden = false;
   weekIndex = i;
-  weeks.forEach((w, n) => w.classList.toggle('is-on', n === i));
+  weeks.forEach((w, n) => {
+    w.classList.toggle('is-on', n === i);
+    const fold = w.querySelector('.week-fold');
+    if (fold && n === i) fold.open = true;
+  });
   updateChrome();
   syncStickyPad();
   const how = behavior || (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
   const run = () => {
     if (scrollMode === 'top') weeks[i].scrollIntoView({ block: 'start', behavior: how });
     if (scrollMode === 'today') {
-      const el = document.querySelector('.day.today');
+      const el = document.getElementById('focus-card') || document.querySelector('.day.today');
       if (el) el.scrollIntoView({ block: 'start', behavior: how });
     }
   };
@@ -1898,9 +1965,130 @@ document.addEventListener('touchend', e => {
 
 window.eabhaRefresh = refreshProgress;
 window.addEventListener('resize', syncStickyPad);
+function headlineFrom(text) {
+  const full = text.replace(/\s+/g, ' ').trim();
+  const limit = 92;
+  if (full.length <= limit) return full.replace(/\.$/, '');
+  const firstStop = full.search(/\.(\s|$)/);
+  if (firstStop >= 48 && firstStop <= limit) return full.slice(0, firstStop);
+  const minAt = full.lastIndexOf(' min', limit);
+  if (minAt >= 24) return full.slice(0, minAt + 4);
+  const slice = full.slice(0, limit);
+  let best = -1;
+  ['. ', ', '].forEach(mark => {
+    const at = slice.lastIndexOf(mark);
+    if (at >= 24 && at > best) best = at;
+  });
+  if (best >= 24) return full.slice(0, best).replace(/[.:]$/, '');
+  const space = slice.lastIndexOf(' ');
+  return full.slice(0, space > 24 ? space : limit).replace(/[,:;]$/, '') + '…';
+}
+function setupCompactDay(day) {
+  const session = day.querySelector('.session p');
+  if (!session || day.querySelector('.headline')) return;
+  const headline = document.createElement('p');
+  headline.className = 'headline';
+  headline.textContent = headlineFrom(session.textContent);
+  day.querySelector('.badges').after(headline);
+  const detail = document.createElement('div');
+  detail.className = 'day-detail';
+  detail.hidden = true;
+  const duration = day.querySelector('.duration');
+  if (duration) detail.append(duration);
+  ['.session', '.club', '.meta', '.calf'].forEach(sel => {
+    const el = day.querySelector(sel);
+    if (el) detail.append(el);
+  });
+  const actions = day.querySelector('.day-actions');
+  headline.after(actions);
+  actions.after(detail);
+  const chevron = document.createElement('span');
+  chevron.className = 'chevron';
+  chevron.setAttribute('aria-hidden', 'true');
+  chevron.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  day.querySelector('.day-head').append(chevron);
+  day.setAttribute('aria-expanded', 'false');
+  function toggleDetail() {
+    const open = detail.hidden;
+    detail.hidden = !open;
+    day.classList.toggle('is-open', open);
+    day.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  day.addEventListener('click', event => {
+    if (event.target.closest('button, a, input, textarea, select, label')) return;
+    toggleDetail();
+  });
+  day._openDetail = function () {
+    if (detail.hidden) toggleDetail();
+  };
+}
+function compactSchedule() {
+  document.querySelectorAll('.week').forEach(week => {
+    const intro = week.querySelector('.week-intro');
+    const fold = document.createElement('details');
+    fold.className = 'week-fold';
+    fold.open = !!week.querySelector('.day.today');
+    const summary = document.createElement('summary');
+    summary.className = 'week-summary';
+    ['h2', '.phase', '.km-line'].forEach(sel => {
+      const el = intro.querySelector(sel);
+      if (el) summary.append(el);
+    });
+    fold.append(summary);
+    const weekNote = intro.querySelector('.week-note');
+    if (weekNote) {
+      const more = document.createElement('details');
+      more.className = 'week-more';
+      const moreSummary = document.createElement('summary');
+      moreSummary.textContent = 'About this week';
+      more.append(moreSummary, weekNote);
+      fold.append(more);
+    }
+    [...intro.children].forEach(child => fold.append(child));
+    [...week.querySelectorAll(':scope > .day')].forEach(day => fold.append(day));
+    intro.remove();
+    week.append(fold);
+  });
+  if (!document.querySelector('.week-fold[open]')) {
+    const folds = [...document.querySelectorAll('.week-fold')];
+    const last = folds[folds.length - 1];
+    (TODAY > '2026-12-06' ? last : folds[0]).open = true;
+  }
+  document.querySelectorAll('.day').forEach(setupCompactDay);
+  const focusDay = document.querySelector('.day.today')
+    || [...document.querySelectorAll('.day')].find(day => day.dataset.date > TODAY)
+    || document.querySelector('.week:last-child .day:last-child');
+  if (!focusDay) return;
+  const focus = document.createElement('article');
+  focus.id = 'focus-card';
+  focus.className = 'focus-card';
+  const kicker = document.createElement('p');
+  kicker.className = 'k';
+  kicker.textContent = focusDay.classList.contains('today') ? 'Today' : (focusDay.dataset.date > TODAY ? 'Next' : 'Last day');
+  const title = document.createElement('h2');
+  title.textContent = focusDay.dataset.label;
+  const badges = focusDay.querySelector('.badges').cloneNode(true);
+  badges.querySelectorAll('[hidden]').forEach(el => el.remove());
+  const line = document.createElement('p');
+  line.className = 'headline';
+  line.textContent = focusDay.querySelector('.headline').textContent;
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'focus-open';
+  open.textContent = 'Show this day';
+  open.addEventListener('click', () => {
+    const fold = focusDay.closest('.week-fold');
+    if (fold) fold.open = true;
+    if (focusDay._openDetail) focusDay._openDetail();
+    focusDay.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  focus.append(kicker, title, badges, line, open);
+  document.getElementById('schedule').prepend(focus);
+}
 load();
 applyState();
 countdownText();
+compactSchedule();
 goToday('auto');
 
   </script>
