@@ -458,6 +458,14 @@
       const data = await res.json();
       if (data.logging !== true) return;
       ready = true;
+      const footer = document.querySelector('.footer p:last-child');
+      if (footer && !document.getElementById('dashLink')) {
+        const link = document.createElement('a');
+        link.id = 'dashLink';
+        link.href = 'dashboard.html';
+        link.textContent = 'Dashboard';
+        footer.append(link);
+      }
       install();
       if (data.role) {
         token = saved;
