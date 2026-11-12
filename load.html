@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The plan's load (prototype)</title>
+  <style>
+    :root { --text: #1E293B; --muted: #475569; --line: #E2E8F0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; color: var(--text); line-height: 1.45; }
+    .wrap { max-width: 40rem; margin: 0 auto; padding: 16px 14px 48px; }
+    a { color: #5B21B6; font-weight: 700; }
+    h1 { font-size: 1.4rem; margin: 8px 0; }
+    h2 { font-size: 1.05rem; margin: 0 0 8px; }
+    .note { background: #FEF3C7; color: #78350F; font-weight: 700; border-radius: 12px; padding: 10px 12px; }
+    .card { background: #fff; border-radius: 16px; padding: 14px; margin: 12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .strategy p { margin: 0 0 0.7rem; }
+    .strategy p:last-child { margin-bottom: 0; }
+    .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+    .phase {
+      min-height: 72px; border: 1px solid var(--line); background: #fff; border-radius: 12px;
+      padding: 8px 4px; text-align: center; font: inherit; font-size: 0.75rem; font-weight: 800;
+      line-height: 1.2; cursor: pointer; color: var(--text); white-space: normal;
+    }
+    .phase small { display: block; font-weight: 650; font-size: 0.62rem; color: var(--muted); margin-top: 4px; }
+    .phase[aria-pressed="true"] { border-color: #1E293B; box-shadow: inset 0 0 0 2px #1E293B; }
+    .chart { width: 100%; height: auto; display: block; }
+    .detail h3 { margin: 0 0 6px; font-size: 1rem; }
+    .detail ul { margin: 8px 0 0; padding-left: 1.1rem; }
+    .muted { color: var(--muted); font-size: 0.88rem; }
+    .key { display: flex; gap: 12px; font-size: 0.8rem; font-weight: 700; margin-top: 8px; }
+    .swatch { width: 12px; height: 12px; display: inline-block; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="note">Prototype. The kilometres and the words are the plan's own estimates and notes, not logged runs.</p>
+    <p><a href="index.html">Back to the schedule</a></p>
+    <h1>The plan's load</h1>
+    <article class="card strategy" id="strategy"></article>
+    <article class="card">
+      <h2>The plan's strategy</h2>
+      <div class="strip" id="strip" role="tablist"></div>
+      <div class="detail" id="detail" hidden></div>
+      <svg class="chart" id="chart" viewBox="0 0 320 180" role="img" aria-label="Weekly running estimate from the plan"></svg>
+      <p class="key"><span><i class="swatch" style="background:#334155"></i>Plan estimate</span></p>
+      <p class="muted">Bars use the week estimates on the plan: ~15, ~29, ~33, ~26 and ~19 km. Week 1 is ~19 if Sunday is the optional easy jog. Week 2 is about 24 if Thursday is the cross trainer.</p>
+    </article>
+  </div>
+  <script>
+    const PHASES = [
+      {
+        id: 1,
+        name: 'Race week',
+        dates: '2 to 8 Nov',
+        km: 15,
+        kmLine: 'Est. running ~15 km incl. race (~19 km if Sunday is the optional easy jog)',
+        purpose: 'Race week for Cork County B on Sat 7 Nov. Tuesday is cut to about half the reps. Thursday is fully off and Friday is a 15 min shakeout. No hill sprints. Wednesday is the only S&C, and it is light.',
+        sessions: [
+          'Tue: Belgooly, cut to half of Glenn\'s fartlek, no hill sprints',
+          'Thu: OFF. Full rest day',
+          'Fri: 15 min shakeout plus strides',
+          'Sat: Cork County B U17 race'
+        ]
+      },
+      {
+        id: 2,
+        name: 'Build',
+        dates: '9 to 15 Nov',
+        km: 29,
+        kmLine: 'Est. running ~29 km (about 24 km if Thursday is the cross trainer)',
+        purpose: 'Back to about the Week 14 level, not above it. Two hard sessions: Tuesday\'s Belgooly progression run, and Saturday\'s Cork Athletics juvenile squad training. Thursday\'s club session is skipped for an easy 25 to 30 min.',
+        sessions: [
+          'Tue: 5.5 km progression run, hill sprints capped',
+          'Thu: 25 to 30 min easy, club session skipped',
+          'Sat: Cork Athletics juvenile squad, hard day 2',
+          'Sun: easy 35 to 45 min'
+        ]
+      },
+      {
+        id: 3,
+        name: 'Peak load',
+        dates: '16 to 22 Nov',
+        km: 33,
+        kmLine: 'Est. running ~33 km',
+        purpose: 'Peak load, max about 10% up on Week 2. The biggest week of the block, with two hard sessions only (Tuesday and Thursday). If anything feels sore, cut it back. No 45 sec hill reps. Friday is the last moderate S&C.',
+        sessions: [
+          'Tue: 5 x 1km at XC race effort minus a touch',
+          'Thu: 6 x 800m at threshold',
+          'Fri: main S&C, the last moderate one',
+          'Sun: long run, easy, 55 to 60 min'
+        ]
+      },
+      {
+        id: 4,
+        name: 'Sharpen',
+        dates: '23 to 29 Nov',
+        km: 26,
+        kmLine: 'Est. running ~26 km',
+        purpose: 'Volume down about 20% (~26 km vs ~33 km). Tuesday trimmed to about 2/3 of Glenn\'s reps, no hill sprints. Thursday is short race-pace reps, 5 x 300m only. Saturday is easy or the cross trainer.',
+        sessions: [
+          'Tue: 4 x 800m at XC race effort, no hill sprints',
+          'Thu: 5 x 300m at 3k pace feel',
+          'Sat: easy run or cross trainer',
+          'Sun: easy run 45 min, flat'
+        ]
+      },
+      {
+        id: 5,
+        name: 'Taper',
+        dates: '30 Nov to 6 Dec',
+        km: 19,
+        kmLine: 'Est. running ~19 km incl. race (~12 km excl. race)',
+        purpose: 'Volume down about 40%, keep a little intensity. No hill sprints, nothing new, no club main set on Thursday. Friday is fully off and Saturday is a 15 min shakeout, so she arrives at the All-Ireland on Sun 6 Dec fresh.',
+        sessions: [
+          'Tue: 2 x (3 x 400m), the final sharpener',
+          'Thu: easy 20 min plus strides',
+          'Fri: OFF',
+          'Sat: 15 min shakeout',
+          'Sun: All-Ireland'
+        ]
+      }
+    ];
+
+    const strategy = document.getElementById('strategy');
+    strategy.innerHTML = [
+      'This block runs from Mon 2 Nov to the All-Ireland on Sun 6 Dec.',
+      'Week 1 is the Cork County B race week: running is lower, Tuesday is cut to about half, Thursday is fully off, and there are no hill sprints.',
+      'Weeks 2 and 3 are the build. Week 2 goes back toward the earlier weekly level, with two hard days. Week 3 is the peak load, the biggest week, about 10% up on Week 2, still two hard sessions.',
+      'The harder running moves from a progression run (hill sprints capped) in Week 2, to 1 km reps and threshold 800s in Week 3, then shorter 800s and 300s in Week 4, then one short sharp 400m session in Week 5.',
+      'Week 4 sharpens, volume down about 20%. Week 5 tapers about 40% and keeps a little intensity, then Friday is off and Saturday is a shakeout.'
+    ].map(line => '<p>' + line + '</p>').join('');
+
+    const strip = document.getElementById('strip');
+    const detail = document.getElementById('detail');
+    let openId = null;
+
+    function draw(selected) {
+      const svg = document.getElementById('chart');
+      const max = 36;
+      const height = 140;
+      const width = 320;
+      const group = width / PHASES.length;
+      let marks = '';
+      PHASES.forEach((phase, i) => {
+        const h = (phase.km / max) * height;
+        const x = i * group + 10;
+        const y = 8 + (height - h);
+        const fill = phase.id === selected ? '#1E293B' : '#64748B';
+        marks += '<rect x="' + x + '" y="' + y + '" width="' + (group - 18) + '" height="' + h + '" rx="4" fill="' + fill + '"></rect>';
+        marks += '<text x="' + (x + (group - 18) / 2) + '" y="' + (height + 24) + '" text-anchor="middle" font-size="11" fill="#475569">~' + phase.km + '</text>';
+      });
+      svg.innerHTML = marks;
+    }
+
+    function show(phase) {
+      openId = openId === phase.id ? null : phase.id;
+      [...strip.children].forEach(btn => btn.setAttribute('aria-pressed', String(Number(btn.dataset.id) === openId)));
+      if (!openId) {
+        detail.hidden = true;
+        detail.innerHTML = '';
+      } else {
+        detail.hidden = false;
+        detail.innerHTML = '<h3>' + phase.name + ' · ' + phase.dates + '</h3><p>' + phase.purpose + '</p><p class="muted">' + phase.kmLine + '</p><ul>' +
+          phase.sessions.map(item => '<li>' + item + '</li>').join('') + '</ul>';
+      }
+      draw(openId);
+    }
+
+    PHASES.forEach(phase => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'phase';
+      btn.dataset.id = String(phase.id);
+      btn.setAttribute('aria-pressed', 'false');
+      btn.innerHTML = phase.name + '<small>' + phase.dates + '</small>';
+      btn.addEventListener('click', () => show(phase));
+      strip.append(btn);
+    });
+    draw(null);
+  </script>
+</body>
+</html>
