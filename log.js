@@ -195,27 +195,35 @@
       html += '<article class="coach-card">';
       html += '<h3>' + esc(week.querySelector('h2').textContent) + '</h3>';
       html += '<p class="phase">' + esc(week.querySelector('.phase').textContent) + '</p>';
-      html += '<p>' + esc(kmLine) + '</p>';
-      html += '<p><strong>Logged: ' + (kmDays ? (Math.round(km * 10) / 10) + ' km' : 'no km entered') + '</strong></p>';
+      html += '<p class="k">Plan this week</p><p>' + esc(kmLine) + '</p>';
+      html += '<p class="k">Logged running</p><p><strong>' + (kmDays ? (Math.round(km * 10) / 10) + ' km' : 'No km entered') + '</strong></p>';
       html += '<p class="coach-meta">' + counts.done + ' done · ' + counts.part + ' partly done · ' +
         counts.skipped + ' skipped · ' + counts.swapped + ' swapped · ' + counts.none + ' not logged</p>';
-      if (trend.length) html += '<div class="rpe-trend">' + trend.join('') + '</div>';
+      if (trend.length) html += '<p class="k">RPE</p><div class="rpe-trend">' + trend.join('') + '</div>';
       days.forEach(day => {
         const entry = logs[day.dataset.date];
-        html += '<div class="coach-day"><div class="who">' + esc(day.dataset.label);
+        const duration = day.querySelector('.duration').cloneNode(true);
+        const label = duration.querySelector('.k');
+        if (label) label.remove();
+        html += '<div class="coach-day' + (entry && entry.pain ? ' pain' : '') + '"><div class="who">' + esc(day.dataset.label);
         html += ' <span class="coach-meta">' + esc(day.dataset.effort || '') + '</span>';
         if (entry && entry.pain) html += '<span class="tag-pain">Pain</span>';
         html += '</div>';
+        html += '<p class="coach-meta"><span class="k">Plan</span> ' + esc(duration.textContent.trim()) + '</p>';
+        html += '<p class="coach-meta">' + esc(day.querySelector('.session p').textContent) + '</p>';
         if (!entry) {
-          html += '<p class="coach-meta">Not logged</p>';
+          html += '<p><span class="k">Logged</span> Not logged</p>';
         } else {
           const bits = [STATUS_LABEL[entry.status] || entry.status];
           if (entry.km !== null && entry.km !== undefined) bits.push(entry.km + ' km');
           if (entry.minutes) bits.push(entry.minutes + ' min');
           if (entry.rpe) bits.push('RPE ' + entry.rpe);
           if (entry.felt) bits.push(entry.felt);
-          html += '<p>' + esc(bits.join(' · ')) + '</p>';
+          html += '<p><span class="k">Logged</span> ' + esc(bits.join(' · ')) + '</p>';
           if (entry.note) html += '<p>' + esc(entry.note) + '</p>';
+          if (entry.painNote || entry.painWhere) {
+            html += '<p>' + esc([entry.painWhere, entry.painNote].filter(Boolean).join(' — ')) + '</p>';
+          }
         }
         html += '</div>';
       });
