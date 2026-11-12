@@ -73,11 +73,14 @@ test('the dashboard leads with the strategy and does not count gaps', () => {
     logs: { '2026-11-10': { km: 8, rpe: 6, status: 'done' } },
     today: '2026-11-12',
   });
-  const strategy = html.indexOf("The plan's strategy");
+  const chart = html.indexOf('Weekly load from the start of the plan');
+  const strip = html.indexOf('id="phaseStrip"');
   const where = html.indexOf('Where we are in the plan');
+  const strategy = html.indexOf("The plan's strategy");
+  const more = html.indexOf('>Read more<');
   const build = html.indexOf('How the running builds');
   const niggles = html.indexOf('Niggles noted');
-  assert.ok(strategy < where && where < build && build < niggles);
+  assert.ok(chart < strip && strip < where && where < strategy && strategy < more && more < build && build < niggles);
   assert.equal(html.includes('Not logged'), false);
   assert.equal(html.includes('missed'), false);
   assert.match(html, /This week/);
