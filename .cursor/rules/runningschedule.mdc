@@ -14,3 +14,11 @@ Eabha is a minor (U17 cross-country). This site is her training schedule, plus w
 - Logs are a minor's health data. Keep them behind sign-in. Do not put them on a public page or in the repo.
 - Phone first. It must be readable outdoors, in plain language for a teenager. Logging should take seconds.
 - Run `npm test` for code changes and keep tests light. No screen recordings or long walkthroughs unless asked.
+
+## Prototype first
+
+- For any new feature or visible change, first build a clickable prototype: front end only, fake sample data, no database, auth, or backend changes.
+- Open it as a draft PR titled "Prototype: ..." with a preview link Niall can open on his phone, plus 3-5 bullets on what it does and the choices made.
+- Stop and wait for Niall's approval or feedback. Don't write production code until he says "approved".
+- After approval, build the real version on the same PR.
+- Skip the prototype only for small fixes, schedule/data updates, or when Niall says "no prototype".
