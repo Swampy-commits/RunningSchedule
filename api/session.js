@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import { bearer, loggingReady, pinMatches, signToken } from '../lib/auth.js';
 import { clientIp, readJson, sameOrigin, send } from '../lib/http.js';
 import { decideSignIn, retryMessage, wrongMessage } from '../lib/store.js';
@@ -21,13 +20,6 @@ export default async function handler(req, res) {
   if (!role) return send(res, 400, { error: 'Choose Eabha or Niall.' });
 
   const ip = clientIp(req);
-  const headers = req.headers || {};
-  console.log(JSON.stringify({
-    signInIp: crypto.createHash('sha256').update(ip).digest('hex').slice(0, 8),
-    real: String(headers['x-real-ip'] || '').length,
-    vercelFwd: String(headers['x-vercel-forwarded-for'] || '').length,
-    fwd: String(headers['x-forwarded-for'] || '').length,
-  }));
   let decision;
   try {
     decision = await decideSignIn(ip, () => pinMatches(role, body.pin));
