@@ -51,6 +51,18 @@ button, input, textarea { font-family: inherit; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+.site-tabs {
+  display: flex; gap: 8px; align-items: center;
+  padding: 8px 12px; background: #0f0a2e;
+  position: sticky; top: 0; z-index: 40;
+}
+.site-tabs a {
+  color: #fff; text-decoration: none; font-weight: 800;
+  min-height: 40px; display: inline-flex; align-items: center;
+  padding: 6px 14px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.28);
+}
+.site-tabs a[aria-current="page"] { background: #FFD700; color: #1a1050; border-color: #FFD700; }
 
 .banner-wrap { position: relative; background: #06021a; overflow: hidden; }
 .banner-wrap canvas { display: block; width: 100%; height: auto; }
@@ -370,6 +382,10 @@ body.guide-open .guide-btn { flex: 1; }
   <noscript><style>.week { display: block !important; } #guide { display: block !important; }</style></noscript>
 </head>
 <body>
+  <nav class="site-tabs" aria-label="Sections">
+    <a href="index.html" aria-current="page">Schedule</a>
+    <a href="dashboard.html" id="dashTab" hidden>Dashboard</a>
+  </nav>
   <div class="banner-wrap">
     <canvas id="game" aria-hidden="true"></canvas>
     <div class="scanlines"></div>

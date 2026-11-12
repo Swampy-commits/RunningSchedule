@@ -45,11 +45,24 @@
     .gate-actions button { padding: 8px 16px; cursor: pointer; }
     .primary { background: #1E293B; color: #fff; border-color: #1E293B; }
     .error { color: #9F1239; font-weight: 700; }
+    .site-tabs {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 8px;
+    }
+    .site-tabs a {
+      text-decoration: none; min-height: 40px; display: inline-flex; align-items: center;
+      padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff;
+    }
+    .site-tabs a[aria-current="page"] { background: #1E293B; color: #fff; border-color: #1E293B; }
+    .sign-out { margin-left: auto; background: none; border: none; color: var(--muted); font-weight: 700; cursor: pointer; min-height: 40px; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <p><a href="index.html">Back to the plan</a></p>
+    <nav class="site-tabs" aria-label="Sections">
+      <a href="index.html">Schedule</a>
+      <a href="dashboard.html" aria-current="page">Dashboard</a>
+      <button type="button" id="signOut" class="sign-out" hidden>Sign out</button>
+    </nav>
     <h1>Your training</h1>
     <div id="gate"></div>
     <div id="dash" hidden></div>

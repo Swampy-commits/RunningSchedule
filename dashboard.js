@@ -12,6 +12,21 @@ import {
 } from './lib/dashboard.js';
 
 const TOKEN_KEY = 'eabha-session';
+
+function savedToken() {
+  const local = localStorage.getItem(TOKEN_KEY);
+  if (local) return local;
+  const older = sessionStorage.getItem(TOKEN_KEY);
+  if (!older) return '';
+  localStorage.setItem(TOKEN_KEY, older);
+  sessionStorage.removeItem(TOKEN_KEY);
+  return older;
+}
+function storeToken(value) {
+  if (value) localStorage.setItem(TOKEN_KEY, value);
+  else localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+}
 const RACE = '2026-12-06';
 const WEEKS = [
   { id: 1, name: 'Week 1', dates: '2 to 8 Nov', phase: 'Race week (Cork County B, Sat 7 Nov)', planKm: 15 },
@@ -227,6 +242,12 @@ function render(logs) {
   document.getElementById('dash').innerHTML = html;
   document.getElementById('dash').hidden = false;
   document.getElementById('gate').hidden = true;
+  const signOut = document.getElementById('signOut');
+  signOut.hidden = false;
+  signOut.onclick = () => {
+    storeToken('');
+    signInForm('');
+  };
 }
 
 function showGate(html) {
@@ -234,6 +255,8 @@ function showGate(html) {
   document.getElementById('gate').hidden = false;
   document.getElementById('dash').hidden = true;
   document.getElementById('dash').innerHTML = '';
+  const signOut = document.getElementById('signOut');
+  if (signOut) signOut.hidden = true;
 }
 
 function signInForm(message) {
@@ -269,7 +292,7 @@ function signInForm(message) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not sign in.');
-      sessionStorage.setItem(TOKEN_KEY, data.token);
+      storeToken(data.token);
       document.getElementById('pin').value = '';
       await loadLogs(data.token);
     } catch (error) {
@@ -281,7 +304,7 @@ function signInForm(message) {
 async function loadLogs(token) {
   const res = await fetch('/api/logs', { headers: { Authorization: 'Bearer ' + token } });
   if (res.status === 401) {
-    sessionStorage.removeItem(TOKEN_KEY);
+    storeToken('');
     signInForm('Sign in again.');
     return;
   }
@@ -291,7 +314,7 @@ async function loadLogs(token) {
 }
 
 async function boot() {
-  const saved = sessionStorage.getItem(TOKEN_KEY) || '';
+  const saved = savedToken();
   let res;
   try {
     res = await fetch('/api/session', { headers: saved ? { Authorization: 'Bearer ' + saved } : {} });

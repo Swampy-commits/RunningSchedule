@@ -55,7 +55,11 @@ test('passcodes and tokens', () => {
   assert.equal(pinMatches('eabha', 'test-niall-pin'), false);
   assert.equal(pinMatches('niall', ''), false);
   const token = signToken('niall');
-  assert.equal(readToken(token).role, 'niall');
+  const payload = readToken(token);
+  assert.equal(payload.role, 'niall');
+  const remaining = payload.exp - Date.now();
+  assert.ok(remaining > 170 * 24 * 60 * 60 * 1000);
+  assert.ok(remaining < 181 * 24 * 60 * 60 * 1000);
   assert.equal(readToken(token.slice(0, -2) + 'aa'), null);
   delete process.env.EABHA_PIN;
   assert.equal(loggingReady(), false);
