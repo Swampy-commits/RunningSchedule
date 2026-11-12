@@ -151,9 +151,19 @@ body.guide-open .guide-btn { flex: 1; }
 .week-fold { margin-bottom: 10px; }
 .week-summary {
   display: block; cursor: pointer; background: #fff; border-radius: 14px;
-  padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 12px 44px 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  position: relative; -webkit-tap-highlight-color: transparent;
 }
 .week-summary::-webkit-details-marker { display: none; }
+.week-summary::after, .week-more summary::after {
+  content: '';
+  position: absolute; right: 16px; top: 22px;
+  width: 10px; height: 10px;
+  border-right: 3px solid #1E293B; border-bottom: 3px solid #1E293B;
+  transform: rotate(45deg);
+}
+.week-fold[open] > .week-summary::after { transform: rotate(225deg); top: 26px; }
+.week-summary:active { background: #F8FAFC; }
 .week-fold[open] > .week-summary { border-radius: 14px 14px 0 0; }
 .week-summary .km-line {
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -163,18 +173,29 @@ body.guide-open .guide-btn { flex: 1; }
 .week-more {
   background: #fff; margin: 0 0 8px; border-radius: 0 0 14px 14px; padding: 0 14px 12px;
 }
-.week-more summary { cursor: pointer; font-size: 0.85rem; font-weight: 800; color: var(--primary); padding-top: 4px; }
-.week-more .week-note { margin-top: 8px; }
-.headline {
-  margin: 0; padding: 4px 12px 0; font-size: 1.05rem; font-weight: 800; line-height: 1.35; cursor: pointer;
+.week-more summary {
+  cursor: pointer; font-size: 0.85rem; font-weight: 800; color: var(--primary);
+  padding: 8px 36px 8px 0; position: relative; list-style: none; min-height: 44px;
 }
-.detail-toggle {
-  margin: 8px 12px 12px; min-height: 36px; padding: 6px 12px; border-radius: 999px;
-  border: 1px solid var(--border); background: #F8FAFC; font-weight: 800; font-size: 0.78rem; cursor: pointer;
+.week-more summary::-webkit-details-marker { display: none; }
+.week-more[open] summary::after { transform: rotate(225deg); top: 18px; }
+.week-more .week-note { margin-top: 8px; }
+.day { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.day:active { transform: scale(0.985); }
+.day-head { padding-right: 46px; }
+.chevron {
+  position: absolute; top: 12px; right: 8px;
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  pointer-events: none; color: #1E293B;
+}
+.chevron svg { display: block; transition: transform 0.15s ease; }
+.day.is-open .chevron svg { transform: rotate(180deg); }
+.headline {
+  margin: 0; padding: 4px 12px 12px; font-size: 1.05rem; font-weight: 800; line-height: 1.35;
 }
 .day-detail { padding-bottom: 8px; }
 .day-detail .duration { padding: 0 12px; }
-.day.is-open { box-shadow: 0 0 0 2px #CBD5E1, 0 1px 3px rgba(0,0,0,0.06); }
+.day.is-open { box-shadow: 0 0 0 2px #94A3B8, 0 1px 3px rgba(0,0,0,0.06); }
 
 .week-intro {
   background: var(--card); border-radius: 14px; padding: 14px;
@@ -197,8 +218,9 @@ body.guide-open .guide-btn { flex: 1; }
 }
 
 .day {
+  position: relative;
   background: var(--card); border-radius: 14px; margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   border-left: 4px solid var(--border);
   scroll-margin-top: calc(var(--sticky, 120px) + 10px);
   overflow: hidden;
@@ -1981,23 +2003,23 @@ function setupCompactDay(day) {
     const el = day.querySelector(sel);
     if (el) detail.append(el);
   });
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'detail-toggle';
-  toggle.textContent = 'Details';
-  toggle.setAttribute('aria-expanded', 'false');
-  headline.after(toggle);
-  toggle.after(detail);
+  headline.after(detail);
+  const chevron = document.createElement('span');
+  chevron.className = 'chevron';
+  chevron.setAttribute('aria-hidden', 'true');
+  chevron.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  day.append(chevron);
+  day.setAttribute('aria-expanded', 'false');
   function toggleDetail() {
     const open = detail.hidden;
     detail.hidden = !open;
     day.classList.toggle('is-open', open);
-    toggle.textContent = open ? 'Hide details' : 'Details';
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    day.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
-  toggle.addEventListener('click', toggleDetail);
-  headline.addEventListener('click', toggleDetail);
-  day.querySelector('.day-head h3').addEventListener('click', toggleDetail);
+  day.addEventListener('click', event => {
+    if (event.target.closest('button, a, input, textarea, select, label')) return;
+    toggleDetail();
+  });
   day._openDetail = function () {
     if (detail.hidden) toggleDetail();
   };
@@ -2005,7 +2027,7 @@ function setupCompactDay(day) {
 function compactSchedule() {
   const note = document.createElement('p');
   note.className = 'proto-note';
-  note.textContent = 'Prototype layout. Same plan, shorter cards. Tap a day for the full session.';
+  note.textContent = 'Prototype layout. Tap a day or a week to open it.';
   document.getElementById('schedule').prepend(note);
   document.querySelectorAll('.week').forEach(week => {
     const intro = week.querySelector('.week-intro');
